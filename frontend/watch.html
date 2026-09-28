@@ -1,0 +1,2446 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <script src="/config.js"></script>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>tan90 — Watch</title>
+
+  <link rel="stylesheet" href="/mobile.css">
+
+  <style>
+
+    @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap");
+
+    @import url("https://db.onlinewebfonts.com/c/2427d7acdb15d5c064b9ced748f0da75?family=LED+Dot-Matrix");
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body { font-family: "DM Sans", sans-serif; background: #080808; color: #fff; min-height: 100vh; }
+
+    nav { background: #111; border-bottom: 1px solid #1e1e1e; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+
+    .nav-brand { font-size: 22px; font-weight: 700; background: linear-gradient(135deg, #fff 0%, #888 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
+
+    .nav-right { display: flex; align-items: center; gap: 8px; }
+
+    .nav-btn { background: #1a1a1a; border: 1px solid #2a2a2a; color: #888; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-family: "DM Sans", sans-serif; text-decoration: none; transition: all 0.2s; }
+
+    .nav-btn:hover { background: #222; color: #fff; }
+
+    .watch-layout { display: grid; grid-template-columns: 1fr 360px; gap: 24px; padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
+
+    @media (max-width: 1024px) { .watch-layout { grid-template-columns: 1fr; } .sidebar { order: 2; } .main-col { order: 1; } }
+
+    .back-link { display: inline-flex; align-items: center; gap: 6px; color: #555; text-decoration: none; font-size: 13px; margin-bottom: 16px; transition: color 0.2s; }
+
+    .back-link:hover { color: #fff; }
+
+
+
+    .player-wrapper { position: relative; margin-bottom: 20px; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid #1e1e1e; }
+
+    .player-wrapper video { width: 100%; display: block; max-height: 520px; background: #000; }
+    .player-wrapper:fullscreen video { max-height: 100vh !important; height: 100vh !important; }
+    .player-wrapper:-webkit-full-screen video { max-height: 100vh !important; height: 100vh !important; }
+
+
+
+    .player-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; pointer-events: none; }
+
+    .overlay-gradient { position: absolute; bottom: 0; left: 0; right: 0; height: 220px; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 50%, transparent 100%); pointer-events: none; }
+
+    .overlay-content { position: relative; z-index: 10; padding: 0; pointer-events: all; opacity: 0; transition: opacity 0.3s ease; }
+
+    .controls-bar { margin: 6px 12px 10px; background: rgba(12,12,12,0.72); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.07); overflow: hidden; }
+
+
+
+    .player-wrapper.paused .overlay-content,
+
+    .player-wrapper.show-controls .overlay-content { opacity: 1; }
+
+
+
+    .overlay-info { padding: 0 20px 10px; }
+
+    .overlay-show-title { font-size: 20px; font-weight: 700; font-family: "LED Dot-Matrix", monospace; letter-spacing: 1px; line-height: 1.2; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
+
+    .overlay-ep-meta { font-size: 13px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+
+
+
+    .overlay-progress { height: 4px; background: rgba(255,255,255,0.15); margin: 6px 14px 0; cursor: pointer; transition: height 0.15s; position: relative; border-radius: 99px; overflow: visible; }
+
+    .overlay-progress:hover { height: 6px; }
+
+    .overlay-progress-fill { height: 100%; background: linear-gradient(90deg, #ff3333, #ff6666); pointer-events: none; position: relative; border-radius: 99px; box-shadow: 0 0 8px rgba(255,50,50,0.6); }
+
+    .overlay-progress-fill::after { content: ''; position: absolute; right: -7px; top: 50%; transform: translateY(-50%) scale(0); width: 14px; height: 14px; background: #fff; border-radius: 50%; transition: transform 0.12s; box-shadow: 0 0 6px rgba(255,100,100,0.8); }
+
+    .overlay-progress:hover .overlay-progress-fill::after { transform: translateY(-50%) scale(1); }
+
+
+
+    .overlay-controls { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px 10px; gap: 4px; }
+
+    .overlay-left { display: flex; align-items: center; gap: 1px; }
+
+    .overlay-right { display: flex; align-items: center; gap: 1px; }
+
+
+
+    /* Bold pill-style control buttons */
+
+    .ctrl-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: #fff; cursor: pointer; padding: 7px 10px; display: flex; align-items: center; opacity: 1; transition: all 0.18s ease; border-radius: 10px; margin: 0 2px; backdrop-filter: blur(6px); }
+
+    .ctrl-btn:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.3); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+
+    .ctrl-btn:active { transform: translateY(0px) scale(0.96); }
+
+    .ctrl-btn svg { display: block; }
+
+
+
+    /* Play button gets special treatment — bigger, brighter */
+
+    #playBtn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); padding: 8px 14px; border-radius: 12px; }
+
+    #playBtn:hover { background: rgba(255,255,255,0.28); border-color: rgba(255,255,255,0.5); }
+
+
+
+    .time-display { font-size: 12px; color: rgba(255,255,255,0.85); white-space: nowrap; padding: 0 8px; font-variant-numeric: tabular-nums; }
+
+    .volume-wrapper { display: flex; align-items: center; gap: 2px; }
+
+    .volume-slider { width: 0; opacity: 0; transition: width 0.2s, opacity 0.2s; cursor: pointer; accent-color: #fff; height: 3px; }
+
+    .volume-wrapper:hover .volume-slider, .volume-wrapper:focus-within .volume-slider { width: 60px; opacity: 1; }
+
+    .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: #fff; border-radius: 50%; cursor: pointer; }
+
+
+
+    .episodes-panel { position: absolute; top: 0; right: 0; bottom: 0; width: 300px; background: rgba(10,10,10,0.96); border-left: 1px solid #2a2a2a; z-index: 200; transform: translateX(100%); transition: transform 0.25s ease; overflow-y: auto; display: flex; flex-direction: column; }
+
+    .episodes-panel.open { transform: translateX(0); }
+
+    .episodes-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #1e1e1e; flex-shrink: 0; }
+
+    .episodes-panel-header span { font-size: 13px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .ep-list-item { display: flex; gap: 10px; padding: 10px 14px; cursor: pointer; transition: background 0.15s; align-items: center; border-bottom: 1px solid #111; text-decoration: none; color: inherit; }
+
+    .ep-list-item:hover { background: rgba(255,255,255,0.05); }
+
+    .ep-list-item.active { background: rgba(255,255,255,0.08); }
+
+    .ep-num { font-size: 11px; color: #555; width: 20px; flex-shrink: 0; }
+
+    .ep-title-text { font-size: 13px; font-weight: 500; line-height: 1.3; }
+
+
+
+    .cc-panel { display: none; position: absolute; bottom: 80px; right: 16px; width: 340px; background: rgba(10,10,10,0.97); border: 1px solid #2a2a2a; border-radius: 10px; padding: 16px; z-index: 300; }
+
+    .cc-panel.open { display: block; }
+
+
+
+    .settings-panel { display: none; position: absolute; bottom: 60px; right: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 8px 0; min-width: 220px; z-index: 300; }
+
+    .settings-panel.open { display: block; }
+
+    .settings-row { padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 13px; color: #fff; }
+
+    .settings-row select { background: #2a2a2a; border: 1px solid #444; color: #fff; padding: 3px 8px; border-radius: 5px; font-size: 12px; outline: none; max-width: 160px; }
+
+
+
+    .skip-indicator { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.15); border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; opacity: 0; transition: opacity 0.3s; pointer-events: none; flex-direction: column; gap: 2px; }
+
+    .skip-back { left: 20%; }
+
+    .skip-forward { right: 20%; }
+
+    .skip-indicator.show { opacity: 1; }
+
+
+
+    .autoplay-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); flex-direction: column; align-items: center; justify-content: center; gap: 16px; display: none; z-index: 50; }
+
+    .autoplay-overlay.show { display: flex; }
+
+    .autoplay-title { font-size: 14px; color: #888; }
+
+    .autoplay-next-title { font-size: 18px; font-weight: 600; }
+
+    .autoplay-countdown { font-size: 48px; font-weight: 700; }
+
+    .autoplay-btn { background: #fff; color: #000; border: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 600; font-family: "DM Sans", sans-serif; cursor: pointer; }
+
+    .autoplay-cancel { background: none; border: 1px solid #444; color: #888; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-family: "DM Sans", sans-serif; cursor: pointer; }
+
+
+
+    .skip-intro-btn { position: absolute; bottom: 80px; right: 20px; background: rgba(20,20,20,0.92); border: 1px solid #444; color: #fff; padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; font-family: "DM Sans", sans-serif; cursor: pointer; display: none; z-index: 10; }
+
+    .skip-intro-btn.visible { display: block; }
+
+
+
+    .video-info-card { background: #111; border: 1px solid #1e1e1e; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+
+    .video-title-large { font-size: 18px; font-weight: 700; margin-bottom: 8px; font-family: "LED Dot-Matrix", monospace; letter-spacing: 1px; }
+
+    .video-tags-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+
+    .category-tag { background: #1a1a2a; color: #888aff; border: 1px solid #2a2a4a; font-size: 11px; padding: 3px 10px; border-radius: 4px; }
+
+    .tag { background: #1a1a1a; color: #555; border: 1px solid #2a2a2a; font-size: 11px; padding: 3px 10px; border-radius: 4px; }
+
+    .video-meta-info { font-size: 13px; color: #555; margin-bottom: 12px; }
+
+    .divider { border: none; border-top: 1px solid #1e1e1e; margin: 12px 0; }
+
+    .video-description { font-size: 14px; color: #888; line-height: 1.7; }
+
+    .admin-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+    .action-btn { padding: 7px 14px; border-radius: 6px; font-size: 12px; font-family: "DM Sans", sans-serif; cursor: pointer; border: none; }
+
+    .btn-delete { background: #2a0f0f; color: #ff6b6b; border: 1px solid #4a1a1a; }
+
+    .btn-thumb { background: #1a1a2a; color: #888aff; border: 1px solid #2a2a4a; cursor: pointer; }
+
+    .set-intro-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 12px; color: #555; flex-wrap: wrap; }
+
+    .set-intro-row input { width: 80px; padding: 6px 10px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px; color: #fff; font-size: 12px; font-family: "DM Sans", sans-serif; }
+
+    .set-intro-btn { padding: 6px 14px; background: #1a1a1a; border: 1px solid #2a2a2a; color: #888; border-radius: 6px; font-size: 12px; cursor: pointer; font-family: "DM Sans", sans-serif; }
+
+    .set-intro-btn:hover { color: #fff; border-color: #444; }
+
+    .sidebar-title { font-size: 14px; font-weight: 600; color: #888; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .next-ep-card { background: #111; border: 1px solid #2a2a1a; border-radius: 10px; padding: 14px; margin-bottom: 16px; display: none; }
+
+    .next-ep-label { font-size: 11px; color: #f0a500; font-weight: 600; margin-bottom: 8px; }
+
+    .next-ep-title { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+
+    .next-ep-btn { display: flex; align-items: center; gap: 8px; background: #fff; color: #000; border: none; padding: 9px 16px; border-radius: 7px; font-size: 13px; font-weight: 600; font-family: "DM Sans", sans-serif; cursor: pointer; text-decoration: none; width: 100%; justify-content: center; }
+
+    .related-card { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid #1a1a1a; text-decoration: none; color: inherit; transition: opacity 0.2s; }
+
+    .related-card:hover { opacity: 0.8; }
+
+    .related-card:last-child { border-bottom: none; }
+
+    .related-thumb { width: 120px; height: 68px; background: #1a1a1a; border-radius: 6px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+
+    .related-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    .related-info { flex: 1; min-width: 0; }
+
+    .related-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; line-height: 1.3; }
+
+    .related-meta { font-size: 11px; color: #444; }
+
+    .shortcuts-hint { text-align: center; color: #2a2a2a; font-size: 11px; margin-top: 12px; }
+
+
+
+    .theatre-mode .watch-layout { grid-template-columns: 1fr !important; }
+
+    .theatre-mode .sidebar { display: none !important; }
+
+    .theatre-mode .player-wrapper video { max-height: 72vh !important; }
+
+
+
+    .ctrl-btn.active { opacity: 1; }
+
+    .ctrl-btn.active svg { filter: drop-shadow(0 0 3px rgba(255,255,255,0.6)); }
+
+    .ep-btn-label { font-size: 12px; font-family: "DM Sans", sans-serif; color: #fff; margin-left: 4px; font-weight: 500; }
+
+    
+
+    /* ── FULLSCREEN ─────────────────────────────────── */
+    :fullscreen .player-wrapper,
+    :-webkit-full-screen .player-wrapper {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      max-height: 100vh !important;
+      border-radius: 0 !important;
+      border: none !important;
+      z-index: 99999;
+      display: flex !important;
+      flex-direction: column !important;
+      background: #000 !important;
+    }
+    :fullscreen .player-wrapper video,
+    :-webkit-full-screen .player-wrapper video {
+      flex: 1 1 auto !important;
+      width: 100% !important;
+      height: 0 !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      object-fit: contain !important;
+      background: #000 !important;
+    }
+    :fullscreen .player-overlay,
+    :-webkit-full-screen .player-overlay {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      height: auto !important;
+    }
+    :fullscreen .controls-bar,
+    :-webkit-full-screen .controls-bar {
+      margin: 0 !important;
+      border-radius: 0 !important;
+      border: none !important;
+      border-top: 1px solid rgba(255,255,255,0.08) !important;
+      flex-shrink: 0 !important;
+    }
+    :fullscreen .overlay-gradient,
+    :-webkit-full-screen .overlay-gradient { height: 300px; }
+    :fullscreen .episodes-panel,
+    :-webkit-full-screen .episodes-panel { height: 100vh; }
+  </style>
+
+</head>
+
+<body>
+
+
+
+<nav>
+
+  <a href="home.html" class="nav-brand">tan90</a>
+
+  <div class="nav-right">
+
+    <a href="home.html" class="nav-btn">Home</a>
+
+    <a href="series.html" class="nav-btn">Series</a>
+
+    <button class="nav-btn" onclick="logout()">Sign Out</button>
+
+  </div>
+
+</nav>
+
+
+
+<div class="watch-layout">
+
+  <div class="main-col">
+
+    <a href="home.html" class="back-link" id="backLink">
+
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+
+      Back to videos
+
+    </a>
+
+
+
+    <div class="player-wrapper paused" id="playerContainer">
+
+
+
+      <video playsinline webkit-playsinline id="videoPlayer" preload="metadata">
+
+        <track id="subtitleTrack" kind="subtitles" label="English" srclang="en" default>
+
+      </video>
+
+
+
+      <div class="skip-indicator skip-back" id="skipBack">
+
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="white"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5" stroke="white" stroke-width="2"/></svg>
+
+        <span>10s</span>
+
+      </div>
+
+      <div class="skip-indicator skip-forward" id="skipForward">
+
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="white"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19" stroke="white" stroke-width="2"/></svg>
+
+        <span>10s</span>
+
+      </div>
+
+
+
+      <div class="autoplay-overlay" id="autoplayOverlay">
+
+        <div class="autoplay-title">Next Episode</div>
+
+        <div class="autoplay-next-title" id="autoplayNextTitle"></div>
+
+        <div class="autoplay-countdown" id="autoplayCountdown">5</div>
+
+        <button class="autoplay-btn" id="autoplayBtn">Play Now</button>
+
+        <button class="autoplay-cancel" onclick="cancelAutoplay()">Cancel</button>
+
+      </div>
+
+
+
+      <button class="skip-intro-btn" id="skipIntroBtn" onclick="skipIntro()">Skip Intro →</button>
+
+
+
+
+
+
+
+      <div id="settingsPanel" class="settings-panel">
+
+        <div style="padding:8px 16px;font-size:12px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Settings</div>
+
+        <div style="border-top:1px solid #2a2a2a;margin:4px 0"></div>
+
+        <div class="settings-row" onclick="cycleSpeed();updateSettingsSpeed()">
+
+          <span>Playback speed</span><span id="settingsSpeed" style="color:#888">1x</span>
+
+        </div>
+
+        <div class="settings-row">
+
+          <span>Quality</span>
+
+          <select id="qualitySelect" onchange="changeQuality(this.value)">
+
+            <option value="auto">Auto (HD)</option>
+
+            <option value="1080">1080p</option>
+
+            <option value="720">720p</option>
+
+            <option value="480">480p</option>
+
+          </select>
+
+        </div>
+
+        <div id="audioTrackRow" class="settings-row" style="display:none">
+
+          <span>Audio Track</span>
+
+          <select id="audioTrackSelect" onchange="switchAudioTrack(this.value)" style="background:#2a2a2a;border:1px solid #444;color:#fff;padding:3px 8px;border-radius:5px;font-size:12px;outline:none;max-width:160px">
+
+            <option value="">&#x2014;</option>
+
+          </select>
+
+        </div>
+
+        <div id="subTrackRow" class="settings-row" style="display:none">
+
+          <span>Subtitles</span>
+
+          <select id="subTrackSelect" onchange="switchSubtitleTrack(this.value)">
+
+            <option value="-1">Off</option>
+
+          </select>
+
+        </div>
+
+
+
+      </div>
+
+
+
+      <div class="episodes-panel" id="episodesPanel">
+
+        <div class="episodes-panel-header">
+
+          <span>Episodes</span>
+
+          <button onclick="toggleEpisodesPanel()" style="background:none;border:none;color:#555;cursor:pointer;font-size:18px;line-height:1">&#x2715;</button>
+
+        </div>
+
+        <div id="episodesList" style="flex:1;overflow-y:auto"></div>
+
+      </div>
+
+
+
+      <div class="player-overlay">
+
+        <div class="overlay-gradient"></div>
+
+        <div class="overlay-content" id="overlayContent">
+
+
+
+          <div class="overlay-info" id="overlayInfo" style="display:none">
+
+            <div class="overlay-show-title" id="overlayShowTitle"></div>
+
+            <div class="overlay-ep-meta" id="overlayEpMeta"></div>
+
+          </div>
+
+          <div class="controls-bar">
+          <div class="overlay-progress" id="progressBar" onclick="seekVideo(event)">
+
+            <div class="overlay-progress-fill" id="progressFill" style="width:0%"></div>
+
+          </div>
+
+          <div class="overlay-controls">
+
+            <div class="overlay-left">
+
+              <button class="ctrl-btn" onclick="togglePlay()" id="playBtn" title="Play/Pause">
+
+                <svg id="playIcon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+
+                <svg id="pauseIcon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="white" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+
+              </button>
+
+              <button class="ctrl-btn" onclick="skip(-10)" title="Rewind 10s">
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.7"/></svg>
+
+              </button>
+
+              <button class="ctrl-btn" onclick="skip(10)" title="Forward 10s">
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-3.7"/></svg>
+
+              </button>
+
+              <div class="volume-wrapper">
+
+                <button class="ctrl-btn" onclick="toggleMute()" id="muteBtn" title="Mute">
+
+                  <svg id="volIcon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+
+                  <svg id="muteIcon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+
+                </button>
+
+                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.05" value="1" oninput="setVolume(this.value)"/>
+
+              </div>
+
+              <div class="time-display"><span id="currentTime">0:00</span> / <span id="duration">0:00</span>          </div><!-- /controls-bar -->
+
+              <div class="time-display"><span id="currentTime">0:00</span> / <span id="duration">0:00</span></div>
+
+            </div>
+
+
+
+            <div class="overlay-right">
+
+              <button class="ctrl-btn" id="nextEpBtn2" onclick="playNextEpisode()" title="Next episode" style="display:none">
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17" y="4" width="2" height="16" fill="white"/></svg>
+
+              </button>
+
+              <button class="ctrl-btn" id="pipBtn" onclick="togglePiP()" title="Picture in picture">
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="1"/><rect x="13" y="10" width="8" height="5" rx="1" fill="white" stroke="none"/></svg>
+
+              </button>
+
+              <button class="ctrl-btn" id="episodesBtn" onclick="toggleEpisodesPanel()" title="Episodes" style="display:none">
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+
+                <span class="ep-btn-label">Episodes</span>
+
+              </button>
+
+
+
+              <button class="ctrl-btn" title="Settings" onclick="toggleSettingsPanel()">
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+
+              </button>
+
+              <button class="ctrl-btn" id="theatreBtn" onclick="toggleTheatre()" title="Theatre mode">
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="1"/></svg>
+
+              </button>
+
+              <button class="ctrl-btn" onclick="toggleFullscreen()" title="Fullscreen">
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+
+              </button>
+
+            </div>
+
+          </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="video-info-card">
+
+      <div class="video-title-large" id="videoTitle">Loading...</div>
+
+      <div class="video-tags-row" id="videoTagsRow"></div>
+
+      <div class="video-meta-info" id="videoMeta"></div>
+
+      <hr class="divider">
+
+      <div class="video-description" id="videoDescription"></div>
+
+      <div class="admin-actions" id="adminActions" style="display:none">
+
+        <button class="action-btn btn-delete" onclick="deleteCurrentVideo()">Delete Video</button>
+
+        <button class="action-btn btn-thumb" onclick="openSubtitlePanel()">Subtitles</button>
+
+        <label class="action-btn btn-thumb">
+
+          Set Thumbnail
+
+          <input type="file" accept="image/*" style="display:none" onchange="uploadCurrentThumbnail(this)">
+
+        </label>
+
+      </div>
+
+      <div class="set-intro-row" id="setIntroRow" style="display:none">
+
+        <span>Skip intro at:</span>
+
+        <input type="number" id="skipIntroInput" placeholder="seconds" min="0"/>
+
+        <button class="set-intro-btn" onclick="saveSkipIntro()">Save</button>
+
+        <button class="set-intro-btn" onclick="saveSkipIntro(true)">Clear</button>
+
+        <span id="skipIntroStatus" style="color:#555"></span>
+
+      </div>
+
+    </div>
+
+
+
+    <div id="subtitlePanel" style="display:none;margin-top:12px;background:#0e0e0e;border:1px solid #1e1e1e;border-radius:10px;padding:16px">
+
+      <div style="font-size:13px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">Subtitles</div>
+
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+
+        <input id="subSearchInput" type="text" placeholder="Search OpenSubtitles..." style="flex:1;min-width:180px;padding:8px 12px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:7px;color:#fff;font-size:13px;outline:none">
+
+        <select id="subLangSelect" style="padding:8px 12px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:7px;color:#fff;font-size:13px;outline:none">
+
+          <option value="en">English</option><option value="hi">Hindi</option><option value="fr">French</option><option value="es">Spanish</option><option value="de">German</option><option value="ja">Japanese</option><option value="ko">Korean</option><option value="zh-CN">Chinese</option>
+
+        </select>
+
+        <button onclick="searchSubtitles()" style="background:#fff;color:#000;border:none;padding:8px 16px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer">Search</button>
+
+      </div>
+
+      <div id="subSearchResults" style="margin-bottom:12px"></div>
+
+      <div style="border-top:1px solid #1e1e1e;padding-top:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+
+        <label style="background:#1a1a2a;border:1px solid #2a2a4a;color:#888aff;padding:7px 14px;border-radius:7px;font-size:12px;cursor:pointer">
+
+          Upload SRT/VTT
+
+          <input type="file" accept=".srt,.vtt" style="display:none" onchange="uploadSubtitle(this)">
+
+        </label>
+
+        <button id="removeSubBtn" onclick="removeSubtitle()" style="display:none;background:#2a0f0f;border:1px solid #4a1a1a;color:#ff6b6b;padding:7px 14px;border-radius:7px;font-size:12px;cursor:pointer">Remove Subtitle</button>
+
+        <span id="subStatus" style="font-size:12px;color:#555"></span>
+
+      </div>
+
+    </div>
+
+    <div class="shortcuts-hint">Space&#xb7;Play/Pause &nbsp;|&nbsp; &#x2190;&#x2192;&#xb7;Skip 10s &nbsp;|&nbsp; M&#xb7;Mute &nbsp;|&nbsp; F&#xb7;Fullscreen</div>
+
+
+
+    <div style="display:flex;align-items:center;gap:12px;margin:16px 0;padding:16px 20px;background:#111;border:1px solid #1e1e1e;border-radius:12px">
+
+      <button id="likeBtn" onclick="react('like')" style="display:flex;align-items:center;gap:8px;background:#1a1a1a;border:1px solid #2a2a2a;color:#888;padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;transition:all 0.2s">
+
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+
+        <span id="likeCount">0</span>
+
+      </button>
+
+      <button id="dislikeBtn" onclick="react('dislike')" style="display:flex;align-items:center;gap:8px;background:#1a1a1a;border:1px solid #2a2a2a;color:#888;padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;transition:all 0.2s">
+
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+
+        <span id="dislikeCount">0</span>
+
+      </button>
+
+      <div style="flex:1"></div>
+
+      <button onclick="shareVideo()" style="display:flex;align-items:center;gap:8px;background:#1a1a1a;border:1px solid #2a2a2a;color:#888;padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;transition:all 0.2s">
+
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+
+        Share
+
+      </button>
+
+      <span id="shareToast" style="font-size:12px;color:#4ade80;display:none">Link copied!</span>
+
+    </div>
+
+
+
+    <div style="background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:16px">
+
+      <div style="font-size:15px;font-weight:600;margin-bottom:16px">Comments</div>
+
+      <div style="display:flex;gap:10px;margin-bottom:20px">
+
+        <div style="width:36px;height:36px;border-radius:50%;background:#1e1e1e;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#666" id="commentAvatar">?</div>
+
+        <div style="flex:1">
+
+          <input id="commentInput" type="text" placeholder="Add a comment..."
+
+            style="width:100%;background:transparent;border:none;border-bottom:1px solid #2a2a2a;color:#fff;font-size:14px;font-family:'DM Sans',sans-serif;padding:6px 0;outline:none"
+
+            onfocus="this.style.borderBottomColor='#555'" onblur="this.style.borderBottomColor='#2a2a2a'"
+
+            onkeydown="if(event.key==='Enter')postComment()">
+
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px">
+
+            <button onclick="document.getElementById('commentInput').value=''" style="background:none;border:none;color:#666;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:6px 12px">Cancel</button>
+
+            <button onclick="postComment()" style="background:#fff;color:#000;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;padding:6px 16px;border-radius:20px">Comment</button>
+
+          </div>
+        </div>
+
+      </div>
+
+      <div id="commentsList"></div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="sidebar">
+
+    <div class="next-ep-card" id="nextEpCard">
+
+      <div class="next-ep-label">UP NEXT IN SERIES</div>
+
+      <div class="next-ep-title" id="nextEpTitle"></div>
+
+      <a class="next-ep-btn" id="nextEpBtnSidebar" href="#">
+
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="black"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+
+        Play Next Episode
+
+      </a>
+
+    </div>
+
+    <div class="sidebar-title">Related Videos</div>
+
+    <div id="relatedList"></div>
+
+  </div>
+
+</div>
+
+
+
+<script>
+
+  const token = localStorage.getItem("token");
+
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  if (!token) window.location.href = "login.html";
+
+
+
+  const params = new URLSearchParams(window.location.search);
+
+  const filename = params.get("filename");
+
+  const videoId = params.get("id");
+
+  const seriesId = params.get("series");
+
+  if (!filename || !videoId) window.location.href = "home.html";
+
+
+
+  const video = document.getElementById("videoPlayer");
+
+  const playerContainer = document.getElementById("playerContainer");
+
+  const progressFill = document.getElementById("progressFill");
+
+  const currentTimeEl = document.getElementById("currentTime");
+
+  const durationEl = document.getElementById("duration");
+
+  const playIcon = document.getElementById("playIcon");
+
+  const pauseIcon = document.getElementById("pauseIcon");
+
+
+
+  const speeds = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+
+  let speedIndex = 2;
+
+  let nextEpisode = null;
+
+  let autoplayTimer = null;
+
+  let autoplayCancelled = false;
+
+  let skipIntroAt = null;
+
+  let allEpisodes = [];
+
+
+
+  let _ctrlHideTimer = null;
+  let _cursorTimer = null;
+
+  function showControls() {
+    playerContainer.classList.add('show-controls');
+    clearTimeout(_ctrlHideTimer);
+    if (!video.paused) {
+      _ctrlHideTimer = setTimeout(() => playerContainer.classList.remove('show-controls'), 5000);
+    }
+  }
+
+  function hideControls() {
+    if (!video.paused) {
+      clearTimeout(_ctrlHideTimer);
+      playerContainer.classList.remove('show-controls');
+    }
+  }
+
+  playerContainer.addEventListener('mousemove', showControls);
+  playerContainer.addEventListener('mouseleave', hideControls);
+  // In fullscreen, mousemove fires on document not playerContainer
+  document.addEventListener('mousemove', () => {
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      showControls();
+    }
+  });
+
+  document.addEventListener('fullscreenchange', () => {
+    if (document.fullscreenElement) { showControls(); }
+    else { clearTimeout(_ctrlHideTimer); clearTimeout(_cursorTimer); document.body.style.cursor = 'default'; }
+  });
+  document.addEventListener('webkitfullscreenchange', () => {
+    if (document.webkitFullscreenElement) { showControls(); }
+    else { clearTimeout(_ctrlHideTimer); clearTimeout(_cursorTimer); document.body.style.cursor = 'default'; }
+  });
+
+  document.addEventListener('mousemove', () => {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) return;
+    document.body.style.cursor = 'default';
+    showControls();
+    clearTimeout(_cursorTimer);
+    _cursorTimer = setTimeout(() => {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        document.body.style.cursor = 'none';
+        if (!video.paused) playerContainer.classList.remove('show-controls');
+      }
+    }, 3000);
+  });
+
+
+
+  async function loadVideo() {
+
+    try {
+
+      const res = await fetch(`${CONFIG.BASE_URL}/api/videos/single/${videoId}`, {
+
+        headers: { "Authorization": `Bearer ${token}` }
+
+      });
+
+      const data = await res.json();
+
+      if (!data.success || !data.video) { window.location.href = "home.html"; return; }
+
+      const v = data.video;
+
+
+
+      document.title = `${v.title} \u2014 tan90`;
+
+      if (v.is_short) {
+
+        window.location.replace(`shorts.html?id=${v.id}&category=${encodeURIComponent(v.category||"")}&tags=${encodeURIComponent(v.tags||"")}`);
+
+        return;
+
+      }
+
+      document.getElementById("videoTitle").textContent = v.title;
+
+
+
+      const metaParts = [new Date(v.created_at).toLocaleDateString()];
+
+      if (v.requested_by_username) metaParts.push(`Requested by: ${v.requested_by_display || v.requested_by_username}`);
+
+      document.getElementById("videoMeta").innerHTML = metaParts.join(' \xb7 ');
+
+      document.getElementById("videoDescription").textContent = v.description || "No description provided";
+
+
+
+      const tagsRow = document.getElementById("videoTagsRow");
+
+      if (v.series_id || seriesId) {
+
+        tagsRow.innerHTML += `<span class="category-tag" style="cursor:pointer" onclick="window.location.href='series.html'">Series: ${v.series_title || 'View Series'}</span>`;
+
+      }
+
+      if (v.category) tagsRow.innerHTML += `<span class="category-tag">${v.category}</span>`;
+
+      if (v.tags) v.tags.split(",").filter(t => t.trim()).forEach(t => { tagsRow.innerHTML += `<span class="tag">${t.trim()}</span>`; });
+
+
+
+      if (user.role === "admin" || (v.owner_id == user.id)) {
+
+        document.getElementById("adminActions").style.display = "flex";
+
+        document.getElementById("setIntroRow").style.display = "flex";
+
+      }
+
+
+
+      if (v.skip_intro_at) {
+
+        skipIntroAt = v.skip_intro_at;
+
+        document.getElementById("skipIntroInput").value = v.skip_intro_at;
+
+      }
+
+
+
+      if (v.subtitle_file) {
+
+        applySubtitle(v.subtitle_file);
+
+        document.getElementById("removeSubBtn").style.display = "inline-block";
+
+      }
+
+
+
+      document.getElementById('subTrackRow').style.display = v.jellyfin_id ? 'flex' : 'none';
+
+      document.getElementById('audioTrackRow').style.display = 'none';
+
+
+
+      if (v.jellyfin_id) {
+
+        loadJellyfinTracks(v.jellyfin_id);
+
+        video.src = `${CONFIG.JELLYFIN_URL}/Videos/${v.jellyfin_id}/stream.mkv?api_key=${CONFIG.JELLYFIN_API_KEY}&MediaSourceId=${v.jellyfin_id}&Static=true`;
+
+      } else {
+
+        video.src = `${CONFIG.BASE_URL}/api/videos/stream/${encodeURIComponent(filename)}?token=${token}`;
+
+      }
+
+
+
+      // Always show overlay title info
+
+      document.getElementById('overlayInfo').style.display = 'block';
+
+      if (v.series_id || seriesId) {
+
+        document.getElementById('overlayShowTitle').textContent = v.series_title || v.title;
+
+        const epMeta = [];
+
+        if (v.season_number) epMeta.push('Season ' + v.season_number);
+
+        if (v.episode_number) epMeta.push('Episode ' + v.episode_number);
+
+        if (v.title) epMeta.push(v.title);
+
+        document.getElementById('overlayEpMeta').textContent = epMeta.join(' \xb7 ');
+
+        const backLink = document.getElementById('backLink');
+
+        backLink.href = 'series.html';
+
+        backLink.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back to series';
+
+      } else {
+
+        // Regular video — just show title, no episode meta
+
+        document.getElementById('overlayShowTitle').textContent = v.title;
+
+        if (v.category) document.getElementById('overlayEpMeta').textContent = v.category;
+
+      }
+
+
+
+      if (v.series_id || seriesId) loadSeriesData(v.series_id || seriesId, v);
+
+      loadRelated();
+
+    } catch (err) {
+
+      console.error("Error loading video:", err);
+
+    }
+
+  }
+
+
+
+  async function loadSeriesData(sid, currentVideo) {
+
+    try {
+
+      const res = await fetch(`${CONFIG.BASE_URL}/api/admin/series/${sid}`, {
+
+        headers: { "Authorization": `Bearer ${token}` }
+
+      });
+
+      const data = await res.json();
+
+      if (!data.success) return;
+
+      allEpisodes = data.episodes;
+
+      const currentIdx = allEpisodes.findIndex(ep => ep.id == videoId);
+
+
+
+      if (currentIdx !== -1 && currentIdx < allEpisodes.length - 1) {
+
+        nextEpisode = allEpisodes[currentIdx + 1];
+
+        const nextTitle = `E${nextEpisode.episode_number} \u2014 ${nextEpisode.title}`;
+
+        document.getElementById("nextEpTitle").textContent = nextTitle;
+
+        const nextHref = `watch.html?id=${nextEpisode.id}&filename=${encodeURIComponent(nextEpisode.filename)}&series=${sid}`;
+
+        document.getElementById("nextEpBtnSidebar").href = nextHref;
+
+        document.getElementById("nextEpCard").style.display = "block";
+
+        document.getElementById("nextEpBtn2").style.display = "flex";
+
+      }
+
+
+
+      document.getElementById("episodesBtn").style.display = "flex";
+
+
+
+      const list = document.getElementById('episodesList');
+
+      list.innerHTML = allEpisodes.map(ep => `
+
+        <a class="ep-list-item ${ep.id == videoId ? 'active' : ''}"
+
+           href="watch.html?id=${ep.id}&filename=${encodeURIComponent(ep.filename)}&series=${sid}">
+
+          <span class="ep-num">E${ep.episode_number}</span>
+
+          <div style="flex:1;min-width:0">
+
+            <div class="ep-title-text">${ep.title}</div>
+
+          </div>
+
+          ${ep.id == videoId ? '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>' : ''}
+
+        </a>`).join('');
+
+    } catch (err) { console.error("Series load error:", err); }
+
+  }
+
+
+
+  function toggleEpisodesPanel() {
+
+    document.getElementById('episodesPanel').classList.toggle('open');
+
+    document.getElementById('episodesBtn').classList.toggle('active');
+
+  }
+
+
+
+  async function loadRelated() {
+
+    try {
+
+      const res = await fetch(`${CONFIG.BASE_URL}/api/videos/related/${videoId}`, {
+
+        headers: { "Authorization": `Bearer ${token}` }
+
+      });
+
+      const data = await res.json();
+
+      const list = document.getElementById("relatedList");
+
+      if (!data.videos || data.videos.length === 0) {
+
+        list.innerHTML = '<div style="color:#333;font-size:13px;padding:16px 0">No related videos</div>';
+
+        return;
+
+      }
+
+      list.innerHTML = data.videos.map(v => `
+
+        <a class="related-card" href="watch.html?id=${v.id}&filename=${encodeURIComponent(v.filename)}${v.series_id ? '&series=' + v.series_id : ''}">
+
+          <div class="related-thumb">
+
+            ${v.thumbnail ? `<img src="${CONFIG.BASE_URL}/api/videos/thumbnail/${v.thumbnail}">` : '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#333"><polygon points="5 3 19 12 5 21 5 3"/></svg>'}
+
+          </div>
+
+          <div class="related-info">
+
+            <div class="related-title">${v.title}</div>
+
+            <div class="related-meta">${v.series_title ? 'S: ' + v.series_title + ' \xb7 ' : ''}${v.category || ''} \xb7 ${new Date(v.created_at).toLocaleDateString()}</div>
+
+          </div>
+
+        </a>`).join("");
+
+    } catch (err) { console.error("Related load error:", err); }
+
+  }
+
+
+
+  let _lastSave = 0;
+
+  video.addEventListener("timeupdate", () => {
+
+    if (video.duration) {
+
+      progressFill.style.width = (video.currentTime / video.duration * 100) + "%";
+
+      currentTimeEl.textContent = formatTime(video.currentTime);
+
+      if (skipIntroAt && video.currentTime < skipIntroAt && video.currentTime > 2) {
+
+        document.getElementById("skipIntroBtn").classList.add("visible");
+
+      } else {
+
+        document.getElementById("skipIntroBtn").classList.remove("visible");
+
+      }
+
+      if (video.currentTime - _lastSave > 10) {
+
+        _lastSave = video.currentTime;
+
+        saveProgress();
+
+      }
+
+    }
+
+  });
+
+
+
+  function saveProgress() {
+
+    if (!videoId || !token) return;
+
+    fetch(`${CONFIG.BASE_URL}/api/videos/history/${videoId}`, {
+
+      method: 'POST',
+
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+
+      body: JSON.stringify({ progress_seconds: Math.floor(video.currentTime), duration_seconds: Math.floor(video.duration) })
+
+    }).catch(() => {});
+
+  }
+
+
+
+  async function resumeProgress() {
+
+    try {
+
+      const res = await fetch(`${CONFIG.BASE_URL}/api/videos/history/${videoId}`, {
+
+        headers: { Authorization: `Bearer ${token}` }
+
+      });
+
+      const data = await res.json();
+
+      if (data.success && data.history && data.history.progress_seconds > 10) {
+
+        const pct = data.history.progress_seconds / data.history.duration_seconds;
+
+        if (pct < 0.95) showResumeToast(data.history.progress_seconds);
+
+      }
+
+    } catch(e) {}
+
+  }
+
+
+
+  function showResumeToast(seconds) {
+
+    const t = document.createElement('div');
+
+    t.style = 'position:absolute;bottom:70px;left:50%;transform:translateX(-50%);background:#1a1a1a;border:1px solid #333;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:9999;display:flex;gap:12px;align-items:center;white-space:nowrap';
+
+    t.innerHTML = '<span style="color:#aaa;font-size:12px">Continue watching?</span>'
+
+      + '<strong>' + formatTime(seconds) + '</strong>'
+
+      + '<button onclick="document.getElementById(\'videoPlayer\').currentTime=' + seconds + ';this.closest(\'div\').remove();" style="background:#f00;color:#fff;border:none;padding:5px 14px;border-radius:5px;font-size:12px;cursor:pointer;font-weight:600">Resume</button>'
+
+      + '<button onclick="document.getElementById(\'videoPlayer\').currentTime=0;this.closest(\'div\').remove();" style="background:#2a2a2a;color:#fff;border:1px solid #444;padding:5px 14px;border-radius:5px;font-size:12px;cursor:pointer">Start over</button>';
+
+    playerContainer.appendChild(t);
+
+    setTimeout(() => t.remove(), 5000);
+
+  }
+
+
+
+  video.addEventListener("loadedmetadata", () => { durationEl.textContent = formatTime(video.duration); });
+
+  video.addEventListener("play", () => { playIcon.style.display = "none"; pauseIcon.style.display = "block"; playerContainer.classList.remove("paused"); autoplayCancelled = false; });
+
+  video.addEventListener("pause", () => { playIcon.style.display = "block"; pauseIcon.style.display = "none"; playerContainer.classList.add("paused"); });
+
+  video.addEventListener("ended", () => { if (nextEpisode && !autoplayCancelled) startAutoplay(); });
+
+  video.addEventListener("click", (e) => {
+
+    if (e.target.closest('.episodes-panel') || e.target.closest('.cc-panel') || e.target.closest('.settings-panel')) return;
+
+    togglePlay();
+
+  });
+
+
+
+  function startAutoplay() {
+
+    const overlay = document.getElementById("autoplayOverlay");
+
+    const countdown = document.getElementById("autoplayCountdown");
+
+    document.getElementById("autoplayNextTitle").textContent = 'E' + nextEpisode.episode_number + ' \u2014 ' + nextEpisode.title;
+
+    overlay.classList.add("show");
+
+    let count = 5;
+
+    countdown.textContent = count;
+
+    document.getElementById("autoplayBtn").onclick = () => playNextEpisode();
+
+    autoplayTimer = setInterval(() => {
+
+      count--;
+
+      countdown.textContent = count;
+
+      if (count <= 0) { clearInterval(autoplayTimer); playNextEpisode(); }
+
+    }, 1000);
+
+  }
+
+
+
+  function playNextEpisode() {
+
+    clearInterval(autoplayTimer);
+
+    if (nextEpisode) window.location.href = 'watch.html?id=' + nextEpisode.id + '&filename=' + encodeURIComponent(nextEpisode.filename) + '&series=' + (seriesId || '');
+
+  }
+
+
+
+  function cancelAutoplay() {
+
+    clearInterval(autoplayTimer);
+
+    autoplayCancelled = true;
+
+    document.getElementById("autoplayOverlay").classList.remove("show");
+
+  }
+
+
+
+  function skipIntro() {
+
+    if (skipIntroAt) { video.currentTime = skipIntroAt; document.getElementById("skipIntroBtn").classList.remove("visible"); }
+
+  }
+
+
+
+  async function saveSkipIntro(clear = false) {
+
+    const input = document.getElementById("skipIntroInput");
+
+    const status = document.getElementById("skipIntroStatus");
+
+    const val = clear ? null : parseInt(input.value);
+
+    if (!clear && (isNaN(val) || val < 0)) { status.textContent = "Enter valid seconds"; return; }
+
+    try {
+
+      const res = await fetch(`${CONFIG.BASE_URL}/api/videos/${videoId}/skip-intro`, {
+
+        method: "PATCH",
+
+        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+
+        body: JSON.stringify({ skip_intro_at: clear ? null : val })
+
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+
+        skipIntroAt = clear ? null : val;
+
+        status.textContent = clear ? "Cleared" : 'Set to ' + val + 's';
+
+        setTimeout(() => { status.textContent = ""; }, 3000);
+
+      }
+
+    } catch (err) { status.textContent = "Error saving"; }
+
+  }
+
+
+
+  function togglePlay() { video.paused ? video.play() : video.pause(); }
+
+
+
+  function skip(seconds) {
+
+    video.currentTime = Math.max(0, Math.min(video.duration, video.currentTime + seconds));
+
+    showSkipIndicator(seconds < 0 ? "skipBack" : "skipForward");
+
+  }
+
+
+
+  function showSkipIndicator(id) {
+
+    const el = document.getElementById(id);
+
+    el.classList.add("show");
+
+    setTimeout(() => el.classList.remove("show"), 600);
+
+  }
+
+
+
+  function seekVideo(e) {
+
+    const bar = document.getElementById("progressBar");
+
+    const rect = bar.getBoundingClientRect();
+
+    video.currentTime = ((e.clientX - rect.left) / rect.width) * video.duration;
+
+  }
+
+
+
+  function toggleMute() {
+
+    video.muted = !video.muted;
+
+    document.getElementById("volIcon").style.display = video.muted ? "none" : "block";
+
+    document.getElementById("muteIcon").style.display = video.muted ? "block" : "none";
+
+  }
+
+
+
+  function setVolume(val) { video.volume = val; video.muted = val == 0; }
+
+
+
+  function cycleSpeed() {
+
+    speedIndex = (speedIndex + 1) % speeds.length;
+
+    video.playbackRate = speeds[speedIndex];
+
+  }
+
+
+
+  function toggleFullscreen() {
+
+    const el = playerContainer;
+
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+
+      if (el.requestFullscreen) el.requestFullscreen();
+
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+
+    } else {
+
+      if (document.exitFullscreen) document.exitFullscreen();
+
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+
+    }
+
+  }
+
+
+
+  function togglePiP() {
+
+    if (document.pictureInPictureElement) {
+
+      document.exitPictureInPicture().catch(() => {});
+
+    } else if (video.requestPictureInPicture) {
+
+      video.requestPictureInPicture().catch(() => {});
+
+    }
+
+  }
+
+
+
+  function formatTime(s) {
+
+    if (isNaN(s)) return "0:00";
+
+    const m = Math.floor(s / 60);
+
+    return m + ':' + Math.floor(s % 60).toString().padStart(2, "0");
+
+  }
+
+
+
+  async function deleteCurrentVideo() {
+
+    if (!confirm("Delete this video?")) return;
+
+    try {
+
+      const res = await fetch(`${CONFIG.BASE_URL}/api/videos/${videoId}`, {
+
+        method: "DELETE", headers: { "Authorization": `Bearer ${token}` }
+
+      });
+
+      const data = await res.json();
+
+      if (data.success) window.location.href = "home.html";
+
+      else alert(data.message);
+
+    } catch (err) { alert("Failed to delete"); }
+
+  }
+
+
+
+  async function uploadCurrentThumbnail(input) {
+
+    const file = input.files[0];
+
+    if (!file) return;
+
+    const formData = new FormData();
+
+    formData.append("thumbnail", file);
+
+    try {
+
+      const res = await fetch(`${CONFIG.BASE_URL}/api/videos/thumbnail/${videoId}`, {
+
+        method: "POST", headers: { "Authorization": `Bearer ${token}` }, body: formData
+
+      });
+
+      const data = await res.json();
+
+      if (data.success) location.reload();
+
+      else alert(data.message);
+
+    } catch (err) { alert("Failed to upload thumbnail"); }
+
+  }
+
+
+
+  let osToken = null;
+
+
+
+  function toggleCCPanel() {
+
+    const panel = document.getElementById("ccPanel");
+
+    panel.classList.toggle('open');
+
+    if (panel.classList.contains('open')) {
+
+      const input = document.getElementById("ccSearchInput");
+
+      if (!input.value) input.value = document.getElementById("videoTitle").textContent;
+
+      document.getElementById('settingsPanel').classList.remove('open');
+
+    }
+
+  }
+
+
+
+  async function getOsToken() {
+
+    if (osToken) return osToken;
+
+    try {
+
+      const res = await fetch("https://api.opensubtitles.com/api/v1/login", {
+
+        method: "POST",
+
+        headers: { "Api-Key": CONFIG.OS_API_KEY, "Content-Type": "application/json" },
+
+        body: JSON.stringify({ username: CONFIG.OS_USERNAME, password: CONFIG.OS_PASSWORD })
+
+      });
+
+      const data = await res.json();
+
+      osToken = data.token;
+
+      return osToken;
+
+    } catch (e) { return null; }
+
+  }
+
+
+
+  async function ccSearch() {
+
+    const query = document.getElementById("ccSearchInput").value.trim();
+
+    const lang = document.getElementById("ccLangSelect").value;
+
+    const results = document.getElementById("ccResults");
+
+    if (!query) return;
+
+    results.innerHTML = '<div style="color:#555;font-size:12px;padding:6px 0">Searching...</div>';
+
+    try {
+
+      const res = await fetch('https://api.opensubtitles.com/api/v1/subtitles?query=' + encodeURIComponent(query) + '&languages=' + lang + '&per_page=10', {
+
+        headers: { "Api-Key": CONFIG.OS_API_KEY, "User-Agent": "tan90/1.0" }
+
+      });
+
+      const data = await res.json();
+
+      if (!data.data || !data.data.length) { results.innerHTML = '<div style="color:#555;font-size:12px;padding:6px 0">No results found</div>'; return; }
+
+      results.innerHTML = data.data.map(r => {
+
+        const fileId = r.attributes.files[0] && r.attributes.files[0].file_id;
+
+        const release = r.attributes.release || (r.attributes.feature_details && r.attributes.feature_details.movie_name) || query;
+
+        const lang2 = r.attributes.language;
+
+        const downloads = r.attributes.download_count || 0;
+
+        return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid #1a1a1a">'
+
+          + '<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + release + '</div>'
+
+          + '<div style="font-size:10px;color:#555">' + lang2 + ' \xb7 ' + downloads + ' downloads</div></div>'
+
+          + '<button onclick="ccApplySubtitle(' + fileId + ')" style="background:#fff;color:#000;border:none;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0">Use</button></div>';
+
+      }).join("");
+
+    } catch (err) { results.innerHTML = '<div style="color:#ff6b6b;font-size:12px">Search failed: ' + err.message + '</div>'; }
+
+  }
+
+
+
+  async function ccApplySubtitle(fileId) {
+
+    const status = document.getElementById("ccStatus");
+
+    const offBtn = document.getElementById("ccOffBtn");
+
+    status.textContent = "Downloading...";
+
+    try {
+
+      const tok = await getOsToken();
+
+      if (!tok) { status.textContent = "Auth failed"; return; }
+
+      const dlRes = await fetch("https://api.opensubtitles.com/api/v1/download", {
+
+        method: "POST",
+
+        headers: { "Api-Key": CONFIG.OS_API_KEY, "Authorization": 'Bearer ' + tok, "Content-Type": "application/json", "User-Agent": "tan90/1.0" },
+
+        body: JSON.stringify({ file_id: fileId, sub_format: "webvtt" })
+
+      });
+
+      const dlData = await dlRes.json();
+
+      if (!dlData.link) { status.textContent = dlData.message || "No download link"; return; }
+
+      const vttRes = await fetch(dlData.link);
+
+      const vttText = await vttRes.text();
+
+      const blob = new Blob([vttText], { type: "text/vtt" });
+
+      const blobUrl = URL.createObjectURL(blob);
+
+      const track = document.getElementById("subtitleTrack");
+
+      const t = video.currentTime;
+
+      const playing = !video.paused;
+
+      track.src = blobUrl;
+
+      track.mode = "showing";
+
+      video.load();
+
+      video.currentTime = t;
+
+      if (playing) video.play();
+
+      status.textContent = "\u2713 Subtitles on";
+
+      offBtn.style.display = "inline-block";
+
+      document.getElementById("ccBtn").classList.add('active');
+
+    } catch (err) { status.textContent = "Failed: " + err.message; }
+
+  }
+
+
+
+  function turnOffSubtitles() {
+
+    const track = document.getElementById("subtitleTrack");
+
+    if (track) { track.src = ""; track.mode = "disabled"; }
+
+    document.getElementById("ccStatus").textContent = "Subtitles off";
+
+    document.getElementById("ccOffBtn").style.display = "none";
+
+    document.getElementById("ccBtn").classList.remove('active');
+
+  }
+
+
+
+  document.addEventListener("keydown", (e) => {
+
+    if (e.target.tagName === "INPUT") return;
+
+    switch(e.key) {
+
+      case " ": e.preventDefault(); togglePlay(); break;
+
+      case "ArrowLeft": skip(-10); break;
+
+      case "ArrowRight": skip(10); break;
+
+      case "m": case "M": toggleMute(); break;
+
+      case "f": case "F": toggleFullscreen(); break;
+
+    }
+
+  });
+
+
+
+  function openSubtitlePanel() {
+
+    const panel = document.getElementById("subtitlePanel");
+
+    panel.style.display = panel.style.display === "none" ? "block" : "none";
+
+    if (panel.style.display === "block") {
+
+      const input = document.getElementById("subSearchInput");
+
+      if (!input.value) input.value = document.getElementById("videoTitle").textContent;
+
+    }
+
+  }
+
+
+
+  async function searchSubtitles() {
+
+    const query = document.getElementById("subSearchInput").value.trim();
+
+    const lang = document.getElementById("subLangSelect").value;
+
+    const results = document.getElementById("subSearchResults");
+
+    if (!query) return;
+
+    results.innerHTML = '<div style="color:#555;font-size:13px">Searching...</div>';
+
+    try {
+
+      const res = await fetch(`${CONFIG.BASE_URL}/api/videos/subtitles/search?query=${encodeURIComponent(query)}&language=${lang}`, { headers: { "Authorization": `Bearer ${token}` } });
+
+      const data = await res.json();
+
+      if (!data.success || !data.results.length) { results.innerHTML = '<div style="color:#555;font-size:13px">No results found</div>'; return; }
+
+      results.innerHTML = data.results.map(r => '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid #1a1a1a"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">' + (r.release || r.title) + '</div><div style="font-size:11px;color:#555">' + r.language + ' \xb7 ' + (r.downloads || 0) + ' downloads</div></div><button onclick="downloadSubtitle(' + r.file_id + ')" style="background:#fff;color:#000;border:none;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer">Use</button></div>').join("");
+
+    } catch (err) { results.innerHTML = '<div style="color:#ff6b6b;font-size:13px">Search failed</div>'; }
+
+  }
+
+
+
+  async function downloadSubtitle(fileId) {
+
+    const status = document.getElementById("subStatus");
+
+    status.textContent = "Downloading...";
+
+    try {
+
+      const res = await fetch(`${CONFIG.BASE_URL}/api/videos/subtitles/download/${videoId}`, { method: "POST", headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify({ file_id: fileId }) });
+
+      const data = await res.json();
+
+      if (data.success) { applySubtitle(data.subtitle_file); status.textContent = "Subtitles applied!"; document.getElementById("removeSubBtn").style.display = "inline-block"; setTimeout(() => { status.textContent = ""; }, 3000); }
+
+      else { status.textContent = data.message || "Failed"; }
+
+    } catch (err) { status.textContent = "Download failed"; }
+
+  }
+
+
+
+  async function uploadSubtitle(input) {
+
+    const file = input.files[0];
+
+    if (!file) return;
+
+    const status = document.getElementById("subStatus");
+
+    status.textContent = "Uploading...";
+
+    const formData = new FormData();
+
+    formData.append("subtitle", file);
+
+    try {
+
+      const res = await fetch(`${CONFIG.BASE_URL}/api/videos/subtitles/upload/${videoId}`, { method: "POST", headers: { "Authorization": `Bearer ${token}` }, body: formData });
+
+      const data = await res.json();
+
+      if (data.success) { applySubtitle(data.subtitle_file); status.textContent = "Subtitles uploaded!"; document.getElementById("removeSubBtn").style.display = "inline-block"; setTimeout(() => { status.textContent = ""; }, 3000); }
+
+      else { status.textContent = data.message || "Failed"; }
+
+    } catch (err) { status.textContent = "Upload failed"; }
+
+  }
+
+
+
+  async function removeSubtitle() {
+
+    const status = document.getElementById("subStatus");
+
+    try {
+
+      const res = await fetch(`${CONFIG.BASE_URL}/api/videos/subtitles/${videoId}`, { method: "DELETE", headers: { "Authorization": `Bearer ${token}` } });
+
+      const data = await res.json();
+
+      if (data.success) { document.getElementById("subtitleTrack").src = ""; document.getElementById("removeSubBtn").style.display = "none"; status.textContent = "Subtitle removed"; setTimeout(() => { status.textContent = ""; }, 3000); }
+
+    } catch (err) { status.textContent = "Failed to remove"; }
+
+  }
+
+
+
+  function applySubtitle(filename) {
+
+    const track = document.getElementById("subtitleTrack");
+
+    track.src = `${CONFIG.BASE_URL}/api/videos/subtitles/file/${filename}`;
+
+    track.mode = "showing";
+
+    const t = video.currentTime;
+
+    const playing = !video.paused;
+
+    video.load();
+
+    video.currentTime = t;
+
+    if (playing) video.play();
+
+  }
+
+
+
+  function scheduleTokenRefresh() {
+
+    try {
+
+      const payload = JSON.parse(atob(token.split(".")[1]));
+
+      const expiresAt = payload.exp * 1000;
+
+      const refreshAt = expiresAt - (30 * 60 * 1000);
+
+      const delay = refreshAt - Date.now();
+
+      if (delay <= 0) { doTokenRefresh(); return; }
+
+      setTimeout(doTokenRefresh, delay);
+
+    } catch (e) {}
+
+  }
+
+
+
+  async function doTokenRefresh() {
+
+    try {
+
+      const res = await fetch(`${CONFIG.BASE_URL}/api/auth/refresh`, { method: "POST", headers: { "Authorization": `Bearer ${token}` } });
+
+      const data = await res.json();
+
+      if (data.success) { localStorage.setItem("token", data.token); scheduleTokenRefresh(); }
+
+    } catch (e) {}
+
+  }
+
+
+
+  scheduleTokenRefresh();
+
+
+
+  async function loadReactions() {
+
+    try {
+
+      const res = await fetch(`${CONFIG.BASE_URL}/api/videos/reactions/${videoId}`, { headers: { Authorization: `Bearer ${token}` } });
+
+      const data = await res.json();
+
+      if (data.success) updateReactionUI(data);
+
+    } catch (e) {}
+
+  }
+
+
+
+  async function react(type) {
+
+    try {
+
+      const res = await fetch(`${CONFIG.BASE_URL}/api/videos/react/${videoId}`, {
+
+        method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+
+        body: JSON.stringify({ reaction: type })
+
+      });
+
+      const data = await res.json();
+
+      if (data.success) updateReactionUI(data);
+
+    } catch (e) {}
+
+  }
+
+
+
+  function updateReactionUI(data) {
+
+    document.getElementById('likeCount').textContent = data.likes;
+
+    document.getElementById('dislikeCount').textContent = data.dislikes;
+
+    const likeBtn = document.getElementById('likeBtn');
+
+    const dislikeBtn = document.getElementById('dislikeBtn');
+
+    likeBtn.style.color = data.userReaction === 'like' ? '#fff' : '#888';
+
+    likeBtn.style.borderColor = data.userReaction === 'like' ? '#555' : '#2a2a2a';
+
+    dislikeBtn.style.color = data.userReaction === 'dislike' ? '#fff' : '#888';
+
+    dislikeBtn.style.borderColor = data.userReaction === 'dislike' ? '#555' : '#2a2a2a';
+
+  }
+
+
+
+  function shareVideo() {
+
+    const url = window.location.href;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+
+      navigator.clipboard.writeText(url).then(() => {
+
+        const toast = document.getElementById('shareToast');
+
+        toast.style.display = 'inline';
+
+        setTimeout(() => { toast.style.display = 'none'; }, 2000);
+
+      });
+
+    } else {
+
+      const ta = document.createElement('textarea');
+
+      ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+
+      document.body.appendChild(ta); ta.select();
+
+      document.execCommand('copy'); document.body.removeChild(ta);
+
+      const toast = document.getElementById('shareToast');
+
+      toast.style.display = 'inline';
+
+      setTimeout(() => { toast.style.display = 'none'; }, 2000);
+
+    }
+
+  }
+
+
+
+  async function loadComments() {
+
+    try {
+
+      const res = await fetch(`${CONFIG.BASE_URL}/api/videos/comments/${videoId}`, { headers: { Authorization: `Bearer ${token}` } });
+
+      const data = await res.json();
+
+      const list = document.getElementById('commentsList');
+
+      if (!data.comments || !data.comments.length) {
+
+        list.innerHTML = '<div style="color:#444;font-size:13px;text-align:center;padding:20px 0">No comments yet. Be the first.</div>';
+
+        return;
+
+      }
+
+      list.innerHTML = data.comments.map(c =>
+
+        '<div style="display:flex;gap:10px;margin-bottom:16px" id="comment-' + c.id + '">'
+
+        + '<div style="width:36px;height:36px;border-radius:50%;background:#1e1e1e;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#666">'
+
+        + (c.display_name || c.username || '?')[0].toUpperCase() + '</div>'
+
+        + '<div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'
+
+        + '<span style="font-size:13px;font-weight:600">' + (c.display_name || c.username) + '</span>'
+
+        + '<span style="font-size:11px;color:#444">' + new Date(c.created_at).toLocaleDateString() + '</span></div>'
+
+        + '<div style="font-size:14px;color:#ccc;line-height:1.5">' + c.content + '</div></div>'
+
+        + (user.role === 'admin' ? '<button onclick="deleteComment(' + c.id + ')" style="background:none;border:none;color:#444;cursor:pointer;font-size:11px;padding:4px 8px;align-self:flex-start">\u2715</button>' : '')
+
+        + '</div>'
+
+      ).join('');
+
+      const u = JSON.parse(localStorage.getItem('user') || '{}');
+
+      const avatar = document.getElementById('commentAvatar');
+
+      if (avatar) avatar.textContent = (u.display_name || u.username || '?')[0].toUpperCase();
+
+    } catch (e) {}
+
+  }
+
+
+
+  async function postComment() {
+
+    const input = document.getElementById('commentInput');
+
+    const content = input.value.trim();
+
+    if (!content) return;
+
+    try {
+
+      const res = await fetch(`${CONFIG.BASE_URL}/api/videos/comments/${videoId}`, {
+
+        method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+
+        body: JSON.stringify({ content })
+
+      });
+
+      const data = await res.json();
+
+      if (data.success) { input.value = ''; loadComments(); }
+
+    } catch (e) {}
+
+  }
+
+
+
+  async function deleteComment(id) {
+
+    try {
+
+      await fetch(`${CONFIG.BASE_URL}/api/videos/comments/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+
+      loadComments();
+
+    } catch (e) {}
+
+  }
+
+
+
+  loadReactions();
+
+  loadComments();
+
+  const avatarEl = document.getElementById('commentAvatar');
+
+  if (avatarEl) avatarEl.textContent = (user.display_name || user.username || '?')[0].toUpperCase();
+
+
+
+  function logout() {
+
+    localStorage.removeItem("token");
+
+    localStorage.removeItem("user");
+
+    window.location.href = "login.html";
+
+  }
+
+
+
+  window.addEventListener('beforeunload', saveProgress);
+
+  loadVideo();
+
+  resumeProgress();
+
+
+
+  const JELLYFIN_USER_ID = '53cf901b296448b386909e21b114f72e';
+
+  let currentAudioIndex = -1;
+
+  let currentSubIndex = -1;
+
+  let currentJellyfinId = null;
+
+  let currentMediaSourceId = null;
+
+
+
+  async function loadJellyfinTracks(jellyfinId) {
+
+    currentJellyfinId = jellyfinId;
+
+    try {
+
+      const res = await fetch(
+
+        `${CONFIG.JELLYFIN_URL}/Items/${jellyfinId}/PlaybackInfo?api_key=${CONFIG.JELLYFIN_API_KEY}&UserId=${JELLYFIN_USER_ID}`,
+
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }
+
+      );
+
+      const data = await res.json();
+
+      const source = data.MediaSources && data.MediaSources[0];
+
+      if (!source) return;
+
+      currentMediaSourceId = source.Id;
+
+
+
+      const streams = source.MediaStreams || [];
+
+      const audioTracks = streams.filter(s => s.Type === 'Audio');
+
+      const subTracks = streams.filter(s => s.Type === 'Subtitle');
+
+
+
+      const audioSel = document.getElementById('audioTrackSelect');
+
+      audioSel.innerHTML = audioTracks.map(t => {
+
+        const label = t.DisplayTitle || ('Track ' + t.Index);
+
+        const clean = label.replace(/www\.[^\s]+ - /gi, '').replace(/www\.[^\s]+/gi, '').trim();
+
+        if (t.IsDefault) currentAudioIndex = t.Index;
+
+        return '<option value="' + t.Index + '"' + (t.IsDefault ? ' selected' : '') + '>' + clean + '</option>';
+
+      }).join('');
+
+
+
+      const subSel = document.getElementById('subTrackSelect');
+
+      subSel.innerHTML = '<option value="-1">Off</option>' + subTracks.map(t => {
+
+        const label = t.DisplayTitle || ('Sub ' + t.Index);
+
+        const clean = label.replace(/www\.[^\s]+ - /gi, '').replace(/www\.[^\s]+/gi, '').trim();
+
+        if (t.IsDefault) currentSubIndex = t.Index;
+
+        return '<option value="' + t.Index + '"' + (t.IsDefault ? ' selected' : '') + '>' + clean + '</option>';
+
+      }).join('');
+
+    } catch (err) {
+
+      console.error('Failed to load Jellyfin tracks:', err);
+
+    }
+
+  }
+
+
+
+  function buildJellyfinSrc(audioIndex, subIndex) {
+
+    const base = `${CONFIG.JELLYFIN_URL}/Videos/${currentJellyfinId}/stream.mkv`;
+
+    const p = new URLSearchParams({
+
+      api_key: CONFIG.JELLYFIN_API_KEY,
+
+      MediaSourceId: currentMediaSourceId || currentJellyfinId,
+
+      Static: 'true',
+
+      AudioStreamIndex: audioIndex >= 0 ? audioIndex : currentAudioIndex,
+
+    });
+
+    if (subIndex >= 0) { p.set('SubtitleStreamIndex', subIndex); p.set('SubtitleMethod', 'Embed'); }
+
+    return base + '?' + p.toString();
+
+  }
+
+
+
+  function switchAudioTrack(indexStr) {}
+
+
+
+  function switchSubtitleTrack(indexStr) {
+
+    const index = parseInt(indexStr);
+
+    if (!currentJellyfinId) return;
+
+    currentSubIndex = index;
+
+    if (index === -1) {
+
+      const t = video.currentTime; const playing = !video.paused;
+
+      video.src = buildJellyfinSrc(currentAudioIndex, -1);
+
+      video.load(); video.currentTime = t; if (playing) video.play();
+
+      return;
+
+    }
+
+    const subUrl = `${CONFIG.JELLYFIN_URL}/Videos/${currentJellyfinId}/${currentMediaSourceId}/Subtitles/${index}/Stream.vtt?api_key=${CONFIG.JELLYFIN_API_KEY}`;
+
+    fetch(subUrl).then(r => r.text()).then(vttText => {
+
+      const blob = new Blob([vttText], { type: 'text/vtt' });
+
+      const blobUrl = URL.createObjectURL(blob);
+
+      const track = document.getElementById("subtitleTrack");
+
+      const t = video.currentTime; const playing = !video.paused;
+
+      track.src = blobUrl; track.mode = 'showing';
+
+      video.load(); video.currentTime = t; if (playing) video.play();
+
+    }).catch(() => {
+
+      const t = video.currentTime; const playing = !video.paused;
+
+      video.src = buildJellyfinSrc(currentAudioIndex, index);
+
+      video.load(); video.currentTime = t; if (playing) video.play();
+
+    });
+
+  }
+
+
+
+  let theatreMode = false;
+
+  function toggleTheatre() {
+
+    theatreMode = !theatreMode;
+
+    document.body.classList.toggle('theatre-mode', theatreMode);
+
+    const btn = document.getElementById('theatreBtn');
+
+    if (theatreMode) {
+
+      btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="2" y="8" width="20" height="8" rx="1"/></svg>';
+
+      btn.title = 'Exit theatre mode';
+
+    } else {
+
+      btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="1"/></svg>';
+
+      btn.title = 'Theatre mode';
+
+    }
+
+  }
+
+
+
+  function toggleSettingsPanel() {
+
+    const p = document.getElementById('settingsPanel');
+
+    p.classList.toggle('open');
+
+    if (p.classList.contains('open')) {
+
+      document.getElementById('ccPanel').classList.remove('open');
+
+    }
+
+  }
+
+
+
+  function updateSettingsSpeed() {
+
+    document.getElementById('settingsSpeed').textContent = speeds[speedIndex] + 'x';
+
+  }
+
+
+
+  function changeQuality(val) {
+
+    console.log('Quality: ' + val + 'p (direct stream, quality fixed by source)');
+
+    toggleSettingsPanel();
+
+  }
+
+
+
+  document.addEventListener('click', (e) => {
+
+    const sp = document.getElementById('settingsPanel');
+
+    if (sp && sp.classList.contains('open') && !sp.contains(e.target) && !e.target.closest('[onclick="toggleSettingsPanel()"]')) {
+
+      sp.classList.remove('open');
+
+    }
+
+    const cp = document.getElementById('ccPanel');
+
+    if (cp && cp.classList.contains('open') && !cp.contains(e.target) && !e.target.closest('[onclick="toggleCCPanel()"]') && !e.target.closest('#ccBtn')) {
+
+      cp.classList.remove('open');
+
+    }
+
+    const ep = document.getElementById('episodesPanel');
+
+    const eb = document.getElementById('episodesBtn');
+
+    if (ep && ep.classList.contains('open') && !ep.contains(e.target) && !e.target.closest('#episodesBtn')) {
+
+      ep.classList.remove('open');
+
+      if (eb) eb.classList.remove('active');
+
+    }
+
+  });
+
+</script>
+
+</body>
+
+</html>

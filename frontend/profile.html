@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/config.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>tan90 — My Profile</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap");
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: "Space Grotesk", sans-serif; background: #080808; color: #fff; min-height: 100vh; }
+
+    nav {
+      background: #111; border-bottom: 1px solid #1e1e1e;
+      padding: 16px 32px; display: flex; align-items: center;
+      justify-content: space-between; position: sticky; top: 0; z-index: 100;
+    }
+
+    .nav-brand {
+      font-size: 22px; font-weight: 700; letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #fff 0%, #888 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+
+    .nav-right { display: flex; align-items: center; gap: 8px; }
+
+    .nav-btn {
+      background: #1a1a1a; border: 1px solid #2a2a2a; color: #888;
+      padding: 8px 16px; border-radius: 8px; cursor: pointer;
+      font-size: 13px; font-family: "Space Grotesk", sans-serif;
+      text-decoration: none; transition: all 0.2s;
+    }
+
+    .nav-btn:hover { background: #222; color: #fff; }
+
+    main { padding: 40px 32px; max-width: 700px; margin: 0 auto; }
+
+    .page-title { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+    .page-subtitle { color: #555; font-size: 14px; margin-bottom: 36px; }
+
+    .card {
+      background: #111; border: 1px solid #1e1e1e;
+      border-radius: 16px; padding: 28px; margin-bottom: 20px;
+    }
+
+    .card-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .card-desc { font-size: 13px; color: #555; margin-bottom: 20px; line-height: 1.6; }
+
+    .user-row { display: flex; align-items: center; gap: 16px; }
+
+    .avatar {
+      width: 52px; height: 52px; background: #1a1a1a;
+      border: 1px solid #2a2a2a; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 700;
+    }
+
+    .user-name { font-size: 18px; font-weight: 600; }
+    .user-role { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    label.field-label {
+      display: block; font-size: 12px; font-weight: 500;
+      color: #666; margin-bottom: 8px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    .input-wrapper { position: relative; margin-bottom: 16px; }
+
+    .input-wrapper input {
+      width: 100%; padding: 12px 48px 12px 16px; background: #1a1a1a;
+      border: 1px solid #2a2a2a; border-radius: 10px; color: #fff;
+      font-size: 14px; font-family: "Space Grotesk", sans-serif;
+      outline: none; transition: border-color 0.2s;
+    }
+
+    .input-wrapper input.no-eye {
+      padding-right: 16px;
+    }
+
+    .input-wrapper input:focus { border-color: #444; }
+    .input-wrapper input::placeholder { color: #444; }
+
+    .eye-btn {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: #555;
+      display: flex; align-items: center; transition: color 0.2s;
+    }
+
+    .eye-btn:hover { color: #aaa; }
+
+    .save-btn {
+      background: #fff; color: #000; border: none;
+      padding: 12px 28px; border-radius: 10px; font-size: 14px;
+      font-weight: 600; font-family: "Space Grotesk", sans-serif; cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .save-btn:hover { background: #e8e8e8; }
+    .save-btn:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; }
+    .save-status { font-size: 13px; color: #555; margin-left: 12px; }
+
+    .field-note { font-size: 12px; color: #444; margin-top: -10px; margin-bottom: 16px; }
+
+    /* SUBSCRIPTION */
+    .sub-active {
+      background: #0a2a0a; border: 1px solid #1a4a1a;
+      border-radius: 10px; padding: 16px 20px; margin-bottom: 16px;
+    }
+
+    .sub-inactive {
+      background: #1a1a1a; border: 1px solid #2a2a2a;
+      border-radius: 10px; padding: 16px 20px; margin-bottom: 16px;
+    }
+
+    .sub-label { font-size: 14px; font-weight: 600; }
+    .sub-meta { font-size: 12px; color: #555; margin-top: 4px; }
+
+    .pay-btn {
+      width: 100%; background: #fff; color: #000; border: none;
+      padding: 14px; border-radius: 10px; font-size: 15px;
+      font-weight: 700; font-family: "Space Grotesk", sans-serif;
+      cursor: pointer; transition: background 0.2s; margin-bottom: 8px;
+    }
+
+    .pay-btn:hover { background: #e8e8e8; }
+    .pay-btn:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; }
+
+    .pay-note { font-size: 12px; color: #444; text-align: center; }
+
+    .dashboard-btn {
+      display: block; text-align: center; background: #0f2a0f;
+      color: #4caf50; border: 1px solid #1a4a1a; padding: 13px;
+      border-radius: 10px; font-size: 14px; font-weight: 600;
+      text-decoration: none; transition: background 0.2s;
+    }
+
+    .dashboard-btn:hover { background: #1a3a1a; }
+
+    .pending-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #2a1a00; border: 1px solid #4a3000;
+      color: #f0a500; padding: 10px 16px; border-radius: 8px; font-size: 13px;
+    }
+
+    .sub-msg { font-size: 13px; color: #555; margin-top: 10px; display: block; }
+
+    /* PREFERENCES */
+    .chip-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+
+    .chip {
+      padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 500;
+      cursor: pointer; border: 1px solid #2a2a2a; background: #1a1a1a;
+      color: #666; transition: all 0.2s; user-select: none;
+    }
+
+    .chip:hover { border-color: #444; color: #aaa; }
+    .chip.selected { background: #fff; color: #000; border-color: #fff; }
+    .no-cats { color: #444; font-size: 13px; }
+
+    #payuForm { display: none; }
+  
+/* Eye button alignment fix */
+.eye-btn {
+  position: absolute !important;
+  right: 14px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  min-height: unset !important;
+  height: auto !important;
+  width: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  background: none !important;
+  border: none !important;
+}
+
+.password-wrapper {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.password-wrapper input {
+  padding-right: 48px !important;
+  width: 100% !important;
+}
+
+  </style>
+  <link rel="stylesheet" href="/mobile.css">
+</head>
+<body>
+
+<nav>
+  <a href="home.html" class="nav-brand">tan90</a>
+  <div class="nav-right">
+    <a href="home.html" class="nav-btn">Home</a>
+    <button class="nav-btn" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<main>
+  <div class="page-title">My Profile</div>
+  <div class="page-subtitle">Manage your account, subscription and preferences</div>
+
+  <!-- USER INFO -->
+  <div class="card">
+    <div class="user-row">
+      <div class="avatar" id="avatar"></div>
+      <div>
+        <div class="user-name" id="userName"></div>
+        <div class="user-role" id="userRole"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT PROFILE -->
+  <div class="card">
+    <div class="card-title">Edit Profile</div>
+    <div class="card-desc">
+      Update your username, display name, email or password.
+      Current password is required to save any changes.
+    </div>
+
+    <label class="field-label">Display Name</label>
+    <div class="input-wrapper">
+      <input type="text" id="displayName" class="no-eye" placeholder="Your display name" />
+    </div>
+
+    <label class="field-label">Change Username</label>
+    <div class="input-wrapper">
+      <input type="text" id="newUsername" class="no-eye" placeholder="New username (leave blank to keep current)" />
+    </div>
+
+    <label class="field-label">Email Address (for password reset)</label>
+    <div class="input-wrapper">
+      <input type="email" id="userEmail" class="no-eye" placeholder="yourname@gmail.com" />
+    </div>
+
+    <label class="field-label">New Password</label>
+    <div class="input-wrapper">
+      <input type="password" id="newPassword" placeholder="New password (leave blank to keep current)" />
+      <button class="eye-btn" type="button" onclick="toggleEye('newPassword','np1o','np1c')">
+        <svg id="np1o" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+        </svg>
+        <svg id="np1c" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+          <line x1="1" y1="1" x2="23" y2="23"/>
+        </svg>
+      </button>
+    </div>
+
+    <label class="field-label">Confirm New Password</label>
+    <div class="input-wrapper">
+      <input type="password" id="confirmPassword" placeholder="Confirm new password" />
+      <button class="eye-btn" type="button" onclick="toggleEye('confirmPassword','np2o','np2c')">
+        <svg id="np2o" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+        </svg>
+        <svg id="np2c" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+          <line x1="1" y1="1" x2="23" y2="23"/>
+        </svg>
+      </button>
+    </div>
+
+    <label class="field-label">Current Password (required to save changes)</label>
+    <div class="input-wrapper">
+      <input type="password" id="currentPassword" placeholder="Enter your current password" />
+      <button class="eye-btn" type="button" onclick="toggleEye('currentPassword','cp1o','cp1c')">
+        <svg id="cp1o" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+        </svg>
+        <svg id="cp1c" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+          <line x1="1" y1="1" x2="23" y2="23"/>
+        </svg>
+      </button>
+    </div>
+
+    <button class="save-btn" id="saveProfileBtn" onclick="saveProfile()">Save Changes</button>
+    <span class="save-status" id="profileStatus"></span>
+  </div>
+
+  <!-- SUBSCRIPTION -->
+  <div style="margin-bottom:8px;padding:12px 16px;border-left:2px solid rgba(255,255,255,0.15);margin-bottom:24px">
+    <p style="font-size:13px;color:#888;font-style:italic;line-height:1.6">Want to contribute? Unlock uploads with a subscription — share your world with the universe.</p>
+  </div>
+  <div class="card" id="subscriptionCard">
+    <div class="card-title">Subscription — 50₹ / month</div>
+    <div class="card-desc">
+      Subscribe to upload your own videos to tan90. Free users can watch all videos.
+      After payment via PayU, your account is activated automatically.
+    </div>
+    <div id="subStatusBox">
+      <div class="sub-inactive">
+        <div class="sub-label">Loading...</div>
+      </div>
+    </div>
+    <div id="subActionBox"></div>
+    <span class="sub-msg" id="subMsg"></span>
+  </div>
+
+  <!-- PREFERENCES -->
+  <div class="card">
+    <div class="card-title">Content Preferences</div>
+    <div class="card-desc">Select categories you prefer. Videos from these get a "For You" badge.</div>
+    <div class="chip-grid" id="chipsGrid"><div class="no-cats">Loading...</div></div>
+    <button class="save-btn" onclick="savePreferences()">Save Preferences</button>
+    <span class="save-status" id="prefStatus"></span>
+  </div>
+
+</main>
+
+<!-- Hidden PayU form -->
+<form id="payuForm" method="POST" action="">
+  <input type="hidden" name="key" id="pu_key" />
+  <input type="hidden" name="txnid" id="pu_txnid" />
+  <input type="hidden" name="amount" id="pu_amount" />
+  <input type="hidden" name="productinfo" id="pu_productinfo" />
+  <input type="hidden" name="firstname" id="pu_firstname" />
+  <input type="hidden" name="email" id="pu_email" />
+  <input type="hidden" name="hash" id="pu_hash" />
+  <input type="hidden" name="surl" id="pu_surl" />
+  <input type="hidden" name="furl" id="pu_furl" />
+</form>
+
+<script>
+  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  if (!token) window.location.href = "login.html";
+
+  // Hide subscription card for admin
+  if (user.role === "admin") {
+    document.getElementById("subscriptionCard").style.display = "none";
+  }
+
+  document.getElementById("avatar").textContent = (user.username || "?")[0].toUpperCase();
+  document.getElementById("userName").textContent = user.username || "";
+  document.getElementById("userRole").textContent = user.role || "";
+
+  // =====================
+  // EYE TOGGLE
+  // =====================
+  function toggleEye(inputId, openId, closedId) {
+    const input = document.getElementById(inputId);
+    const isPass = input.type === "password";
+    input.type = isPass ? "text" : "password";
+    document.getElementById(openId).style.display = isPass ? "none" : "block";
+    document.getElementById(closedId).style.display = isPass ? "block" : "none";
+  }
+
+  // =====================
+  // SAVE PROFILE
+  // =====================
+  async function saveProfile() {
+    const btn = document.getElementById("saveProfileBtn");
+    const status = document.getElementById("profileStatus");
+    const currentPassword = document.getElementById("currentPassword").value.trim();
+    const newPassword = document.getElementById("newPassword").value.trim();
+    const confirmPassword = document.getElementById("confirmPassword").value.trim();
+
+    status.textContent = "";
+
+    if (!currentPassword) {
+      status.textContent = "Current password is required to save changes";
+      return;
+    }
+
+    if (newPassword && newPassword !== confirmPassword) {
+      status.textContent = "New passwords do not match";
+      return;
+    }
+
+    if (newPassword && newPassword.length < 6) {
+      status.textContent = "New password must be at least 6 characters";
+      return;
+    }
+
+    btn.disabled = true;
+    status.textContent = "Saving...";
+
+    try {
+      const res = await fetch(`${CONFIG.BASE_URL}/api/admin/update-profile`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          display_name: document.getElementById("displayName").value.trim(),
+          new_username: document.getElementById("newUsername").value.trim(),
+          new_password: newPassword,
+          current_password: currentPassword,
+          email: document.getElementById("userEmail").value.trim()
+        })
+      });
+
+      const data = await res.json();
+      status.textContent = data.message;
+
+      if (data.success && data.user) {
+        const updatedUser = { ...user, username: data.user.username };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        document.getElementById("userName").textContent = data.user.username;
+        document.getElementById("avatar").textContent = data.user.username[0].toUpperCase();
+        document.getElementById("currentPassword").value = "";
+        document.getElementById("newPassword").value = "";
+        document.getElementById("confirmPassword").value = "";
+      }
+
+      setTimeout(() => { status.textContent = ""; }, 4000);
+    } catch (err) {
+      status.textContent = "Error saving changes";
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // =====================
+  // SUBSCRIPTION
+  // =====================
+  async function loadSubscriptionStatus() {
+    if (user.role === "admin") return;
+
+    const statusBox = document.getElementById("subStatusBox");
+    const actionBox = document.getElementById("subActionBox");
+
+    try {
+      const res = await fetch(`${CONFIG.BASE_URL}/api/admin/my-subscription`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+
+      const data = await res.json();
+
+      if (data.subscribed) {
+        const expiry = data.subscription_expires
+          ? new Date(data.subscription_expires).toLocaleDateString() : "—";
+        statusBox.innerHTML = `
+          <div class="sub-active">
+            <div class="sub-label" style="color:#4caf50">✓ Active Subscriber</div>
+            <div class="sub-meta">Expires: ${expiry}</div>
+          </div>`;
+        actionBox.innerHTML = `
+          <a href="subscriber.html" class="dashboard-btn">
+            Go to My Upload Dashboard →
+          </a>`;
+      } else if (data.has_pending_request) {
+        statusBox.innerHTML = `
+          <div class="sub-inactive">
+            <div class="sub-label">Payment Processing</div>
+            <div class="sub-meta">Your subscription is being activated</div>
+          </div>`;
+        actionBox.innerHTML = `<div class="pending-badge">⏳ Processing payment...</div>`;
+      } else {
+        statusBox.innerHTML = `
+          <div class="sub-inactive">
+            <div class="sub-label">Free Account</div>
+            <div class="sub-meta">Watch all videos for free · Subscribe to upload your own videos</div>
+          </div>`;
+        actionBox.innerHTML = `
+          <button class="pay-btn" id="payBtn" onclick="initiatePayment()">
+            Subscribe Now — 50₹/month via PayU
+          </button>
+          <div class="pay-note">
+            Secure payment via PayU · UPI, Cards, Net Banking · Auto-activated after payment
+          </div>`;
+      }
+    } catch (err) {
+      console.error("Subscription fetch error:", err);
+      statusBox.innerHTML = `
+        <div class="sub-inactive">
+          <div class="sub-label">Free Account</div>
+          <div class="sub-meta">Watch all videos for free · Subscribe to upload your own videos</div>
+        </div>`;
+      actionBox.innerHTML = `
+        <button class="pay-btn" id="payBtn" onclick="initiatePayment()">
+          Subscribe Now — 50₹/month via PayU
+        </button>
+        <div class="pay-note">Secure payment via PayU · UPI, Cards, Net Banking</div>`;
+    }
+  }
+
+  // =====================
+  // PAYU PAYMENT
+  // =====================
+  async function initiatePayment() {
+    const btn = document.getElementById("payBtn");
+    const msg = document.getElementById("subMsg");
+
+    if (btn) btn.disabled = true;
+    if (btn) btn.textContent = "Redirecting to PayU...";
+    msg.textContent = "";
+
+    try {
+      const res = await fetch(`${CONFIG.BASE_URL}/api/admin/request-subscription`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        msg.textContent = data.message;
+        if (btn) { btn.disabled = false; btn.textContent = "Subscribe Now — 50₹/month via PayU"; }
+        return;
+      }
+
+      const p = data.paymentData;
+
+      // Fill hidden PayU form and submit
+      document.getElementById("payuForm").action = p.payuBaseUrl;
+      document.getElementById("pu_key").value = p.key;
+      document.getElementById("pu_txnid").value = p.txnId;
+      document.getElementById("pu_amount").value = p.amount;
+      document.getElementById("pu_productinfo").value = p.productInfo;
+      document.getElementById("pu_firstname").value = p.firstName;
+      document.getElementById("pu_email").value = p.email;
+      document.getElementById("pu_hash").value = p.hash;
+      document.getElementById("pu_surl").value = p.successUrl;
+      document.getElementById("pu_furl").value = p.failureUrl;
+
+      document.getElementById("payuForm").submit();
+
+    } catch (err) {
+      msg.textContent = "Payment initiation failed. Please try again.";
+      if (btn) { btn.disabled = false; btn.textContent = "Subscribe Now — 50₹/month via PayU"; }
+    }
+  }
+
+  // =====================
+  // PREFERENCES
+  // =====================
+  let selectedCategories = [];
+
+  async function loadPreferences() {
+    try {
+      const [catRes, prefRes] = await Promise.all([
+        fetch(`${CONFIG.BASE_URL}/api/admin/categories`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        }),
+        fetch(`${CONFIG.BASE_URL}/api/admin/preferences`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        })
+      ]);
+      const catData = await catRes.json();
+      const prefData = await prefRes.json();
+      selectedCategories = prefData.preferred_categories || [];
+      const grid = document.getElementById("chipsGrid");
+      const cats = catData.categories || [];
+
+      if (!cats.length) {
+        grid.innerHTML = '<div class="no-cats">No categories yet</div>'; return;
+      }
+
+      grid.innerHTML = cats.map(cat => `
+        <div class="chip ${selectedCategories.includes(cat) ? "selected" : ""}"
+             onclick="toggleCat('${cat}', this)">${cat}</div>
+      `).join("");
+    } catch (err) {
+      console.error("Preferences error:", err);
+    }
+  }
+
+  function toggleCat(cat, el) {
+    if (selectedCategories.includes(cat)) {
+      selectedCategories = selectedCategories.filter(c => c !== cat);
+      el.classList.remove("selected");
+    } else {
+      selectedCategories.push(cat);
+      el.classList.add("selected");
+    }
+  }
+
+  async function savePreferences() {
+    const status = document.getElementById("prefStatus");
+    status.textContent = "Saving...";
+    try {
+      const res = await fetch(`${CONFIG.BASE_URL}/api/admin/preferences`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ preferred_categories: selectedCategories })
+      });
+      const data = await res.json();
+      status.textContent = data.success ? "Saved!" : "Failed";
+      setTimeout(() => { status.textContent = ""; }, 3000);
+    } catch (err) {
+      status.textContent = "Error saving";
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "login.html";
+  }
+
+  loadSubscriptionStatus();
+  loadPreferences();
+</script>
+
+</body>
+</html>

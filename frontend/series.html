@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/config.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>tan90 — Series</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap");
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: "DM Sans", sans-serif; background: #080808; color: #fff; min-height: 100vh; }
+
+    nav {
+      background: #111; border-bottom: 1px solid #1e1e1e;
+      padding: 16px 32px; display: flex; align-items: center;
+      justify-content: space-between; position: sticky; top: 0; z-index: 100;
+    }
+    .nav-brand {
+      font-size: 22px; font-weight: 700; letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #fff 0%, #888 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+    .nav-right { display: flex; align-items: center; gap: 8px; }
+    .nav-btn {
+      background: #1a1a1a; border: 1px solid #2a2a2a; color: #888;
+      padding: 8px 16px; border-radius: 8px; cursor: pointer;
+      font-size: 13px; font-family: "DM Sans", sans-serif;
+      text-decoration: none; transition: all 0.2s;
+    }
+    .nav-btn:hover { background: #222; color: #fff; }
+    .nav-btn.admin { border-color: #3a2a00; color: #f0a500; background: #1a1500; }
+
+    main { padding: 32px; max-width: 1400px; margin: 0 auto; }
+
+    .create-panel {
+      background: #111; border: 1px solid #1e1e1e;
+      border-radius: 12px; padding: 24px; margin-bottom: 32px; display: none;
+    }
+    .panel-title {
+      font-size: 14px; font-weight: 600; color: #666;
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px;
+    }
+    .create-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    input, textarea {
+      width: 100%; padding: 10px 14px; background: #1a1a1a;
+      border: 1px solid #2a2a2a; border-radius: 8px; color: #fff;
+      font-size: 14px; font-family: "DM Sans", sans-serif; outline: none;
+    }
+    input:focus, textarea:focus { border-color: #444; }
+    input::placeholder, textarea::placeholder { color: #444; }
+    .create-btn {
+      background: #fff; color: #000; border: none; padding: 10px 24px;
+      border-radius: 8px; font-size: 13px; font-weight: 600;
+      font-family: "DM Sans", sans-serif; cursor: pointer;
+    }
+    .create-btn:hover { background: #e8e8e8; }
+    .create-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .create-status { font-size: 13px; color: #555; margin-left: 12px; }
+
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .page-title { font-size: 22px; font-weight: 700; }
+
+    .series-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .series-card {
+      background: #111; border: 1px solid #1e1e1e; border-radius: 12px;
+      overflow: hidden; cursor: pointer; transition: border-color 0.2s, transform 0.2s;
+      text-decoration: none; color: inherit; display: block;
+    }
+    .series-card:hover { border-color: #333; transform: translateY(-3px); }
+    .series-thumb {
+      background: #161616; height: 180px; display: flex;
+      align-items: center; justify-content: center; position: relative; overflow: hidden;
+    }
+    .series-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .series-thumb-placeholder {
+      display: flex; flex-direction: column; align-items: center; gap: 8px; color: #333;
+    }
+    .episode-count-badge {
+      position: absolute; bottom: 10px; right: 10px;
+      background: rgba(0,0,0,0.8); color: #fff; font-size: 11px;
+      font-weight: 600; padding: 4px 10px; border-radius: 6px;
+    }
+    .series-info { padding: 16px; }
+    .series-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .series-desc { font-size: 12px; color: #555; margin-bottom: 8px; }
+    .series-meta { font-size: 11px; color: #444; }
+    .empty-state { text-align: center; padding: 80px 0; color: #333; font-size: 15px; }
+
+    .detail-view { display: none; }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: #555; text-decoration: none; font-size: 13px;
+      margin-bottom: 24px; cursor: pointer; background: none; border: none;
+      font-family: "DM Sans", sans-serif; transition: color 0.2s;
+    }
+    .back-btn:hover { color: #fff; }
+
+    .series-hero {
+      background: #111; border: 1px solid #1e1e1e; border-radius: 16px;
+      padding: 32px; margin-bottom: 32px;
+      display: flex; gap: 32px; align-items: flex-start;
+    }
+    .hero-thumb {
+      width: 200px; height: 280px; background: #1a1a1a;
+      border-radius: 12px; flex-shrink: 0; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hero-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .hero-info { flex: 1; }
+    .hero-badge {
+      display: inline-block; background: #1a1a2a; color: #888aff;
+      border: 1px solid #2a2a4a; font-size: 11px; font-weight: 600;
+      padding: 3px 10px; border-radius: 4px; margin-bottom: 12px;
+    }
+    .hero-title { font-size: 28px; font-weight: 700; margin-bottom: 10px; }
+    .hero-desc { color: #666; font-size: 14px; line-height: 1.7; margin-bottom: 16px; }
+    .hero-meta { font-size: 13px; color: #444; }
+    .play-first-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #fff; color: #000; border: none; padding: 12px 24px;
+      border-radius: 8px; font-size: 14px; font-weight: 600;
+      font-family: "DM Sans", sans-serif; cursor: pointer;
+      text-decoration: none; margin-top: 20px; transition: background 0.2s;
+    }
+    .play-first-btn:hover { background: #e8e8e8; }
+
+    .season-section { margin-bottom: 32px; }
+    .season-title {
+      font-size: 16px; font-weight: 600; color: #888;
+      margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #1e1e1e;
+    }
+    .episode-list { display: flex; flex-direction: column; gap: 8px; }
+    .episode-card {
+      background: #111; border: 1px solid #1e1e1e; border-radius: 10px;
+      display: flex; align-items: center; gap: 16px; padding: 14px 16px;
+      text-decoration: none; color: inherit; transition: border-color 0.2s;
+    }
+    .episode-card:hover { border-color: #333; }
+    .ep-number {
+      width: 36px; height: 36px; background: #1a1a1a; border: 1px solid #2a2a2a;
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #666; flex-shrink: 0;
+    }
+    .ep-thumb {
+      width: 100px; height: 60px; background: #1a1a1a; border-radius: 6px;
+      overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    }
+    .ep-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .ep-play-icon { color: #555; }
+    .ep-info { flex: 1; }
+    .ep-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .ep-desc { font-size: 12px; color: #555; }
+    .ep-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .ep-delete-btn {
+      background: #2a0f0f; border: 1px solid #4a1a1a; color: #ff6b6b;
+      padding: 5px 12px; border-radius: 6px; font-size: 11px;
+      font-family: "DM Sans", sans-serif; cursor: pointer;
+    }
+
+    .upload-ep-panel {
+      background: #111; border: 1px solid #1e1e1e; border-radius: 12px;
+      padding: 24px; margin-bottom: 24px; display: none;
+    }
+    .upload-ep-grid {
+      display: grid; grid-template-columns: 1fr 1fr 120px 120px;
+      gap: 12px; margin-bottom: 12px;
+    }
+    .file-label {
+      background: #1a1a1a; border: 1px dashed #333; border-radius: 8px;
+      padding: 10px 16px; color: #666; font-size: 13px; cursor: pointer; white-space: nowrap;
+    }
+    #epFile { display: none; }
+
+    @media (max-width: 768px) {
+      .series-hero { flex-direction: column; }
+      .hero-thumb { width: 100%; height: 200px; }
+      .upload-ep-grid { grid-template-columns: 1fr 1fr; }
+      .create-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+  <link rel="stylesheet" href="/mobile.css">
+</head>
+<body>
+
+<nav>
+  <a href="home.html" class="nav-brand">tan90</a>
+  <div class="nav-right">
+    <a href="home.html" class="nav-btn">Home</a>
+    <a href="request.html" class="nav-btn" id="reqLink" style="display:none">Requests</a>
+    <a href="profile.html" class="nav-btn" id="profileLink" style="display:none">Profile</a>
+    <a href="admin.html" class="nav-btn admin" id="adminLink" style="display:none">Dashboard</a>
+    <button class="nav-btn" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<main>
+
+  <!-- LIST VIEW -->
+  <div id="listView">
+    <div class="create-panel" id="createPanel">
+      <div class="panel-title">Create New Series</div>
+      <div class="create-grid">
+        <input type="text" id="seriesTitle" placeholder="Series title" />
+        <input type="text" id="seriesDesc" placeholder="Description (optional)" />
+      </div>
+      <button class="create-btn" onclick="createSeries()">Create Series</button>
+      <span class="create-status" id="createStatus"></span>
+    </div>
+
+    <div class="page-header">
+      <div class="page-title">Series</div>
+    </div>
+
+    <div class="series-grid" id="seriesGrid">
+      <div class="empty-state">Loading series...</div>
+    </div>
+  </div>
+
+  <!-- DETAIL VIEW -->
+  <div class="detail-view" id="detailView">
+    <button class="back-btn" onclick="showListView()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Back to Series
+    </button>
+
+    <div class="series-hero" id="seriesHero"></div>
+
+    <div class="upload-ep-panel" id="uploadEpPanel">
+      <div class="panel-title">Add Episode</div>
+      <div class="upload-ep-grid">
+        <input type="text" id="epTitle" placeholder="Episode title" />
+        <input type="text" id="epDesc" placeholder="Description (optional)" />
+        <input type="number" id="epSeason" placeholder="Season" value="1" min="1" />
+        <input type="number" id="epNumber" placeholder="Episode #" min="1" />
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <label class="file-label" for="epFile" id="epFileLabel">Choose video file...</label>
+        <input type="file" id="epFile" accept="video/*" onchange="updateEpLabel(this)" />
+        <button class="create-btn" id="uploadEpBtn" onclick="uploadEpisode()">Upload Episode</button>
+        <span class="create-status" id="epStatus"></span>
+      </div>
+      <div id="epProgressWrap" style="display:none;margin-top:12px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:#555;margin-bottom:6px">
+          <span id="epProgressLabel">Uploading...</span>
+          <span id="epProgressPct">0%</span>
+        </div>
+        <div style="background:#1a1a1a;border-radius:4px;height:4px;overflow:hidden">
+          <div id="epProgressBar" style="height:100%;width:0%;background:#fff;transition:width 0.3s"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="seasonsContainer"></div>
+  </div>
+
+</main>
+
+<script>
+  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  if (!token) window.location.href = "login.html";
+
+  let currentSeriesId = null;
+
+  if (user.role === "admin") {
+    document.getElementById("adminLink").style.display = "inline-flex";
+    document.getElementById("createPanel").style.display = "block";
+  } else {
+    document.getElementById("reqLink").style.display = "inline-flex";
+    document.getElementById("profileLink").style.display = "inline-flex";
+  }
+
+  function thumbImg(filename, alt) {
+    if (!filename) return null;
+    return `<img src="${CONFIG.BASE_URL}/api/videos/thumbnail/${filename}" alt="${alt || ''}" onerror="this.style.display='none'">`;
+  }
+
+  // =====================
+  // LIST VIEW
+  // =====================
+  async function loadSeries() {
+    const grid = document.getElementById("seriesGrid");
+    grid.innerHTML = '<div class="empty-state">Loading series...</div>';
+    try {
+      const res = await fetch(`${CONFIG.BASE_URL}/api/admin/series`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        grid.innerHTML = '<div class="empty-state">Failed to load series</div>';
+        return;
+      }
+
+      if (!data.series || data.series.length === 0) {
+        grid.innerHTML = '<div class="empty-state">No series yet</div>';
+        return;
+      }
+
+      grid.innerHTML = data.series.map(s => `
+        <div class="series-card" onclick="showSeriesDetail(${s.id})">
+          <div class="series-thumb">
+            ${s.thumbnail
+              ? thumbImg(s.thumbnail, s.title)
+              : `<div class="series-thumb-placeholder">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1">
+                     <rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/>
+                   </svg>
+                 </div>`
+            }
+            <div class="episode-count-badge">${s.episode_count || 0} ep</div>
+          </div>
+          <div class="series-info">
+            <div class="series-title">${s.title}</div>
+            <div class="series-desc">${s.description || 'No description'}</div>
+            <div class="series-meta">${s.created_by_name ? 'By ' + s.created_by_name : ''}</div>
+          </div>
+        </div>
+      `).join("");
+    } catch (err) {
+      console.error("Error loading series:", err);
+      grid.innerHTML = '<div class="empty-state">Error loading series</div>';
+    }
+  }
+
+  async function createSeries() {
+    const title = document.getElementById("seriesTitle").value.trim();
+    const desc = document.getElementById("seriesDesc").value.trim();
+    const status = document.getElementById("createStatus");
+
+    if (!title) { status.textContent = "Please enter a title"; return; }
+
+    try {
+      const res = await fetch(`${CONFIG.BASE_URL}/api/admin/series`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ title, description: desc })
+      });
+      const data = await res.json();
+      if (data.success) {
+        status.textContent = "Series created!";
+        document.getElementById("seriesTitle").value = "";
+        document.getElementById("seriesDesc").value = "";
+        setTimeout(() => { status.textContent = ""; }, 3000);
+        loadSeries();
+      } else {
+        status.textContent = data.message || "Failed to create series";
+      }
+    } catch (err) {
+      status.textContent = "Error creating series";
+    }
+  }
+
+  // =====================
+  // DETAIL VIEW
+  // =====================
+  async function showSeriesDetail(id) {
+    currentSeriesId = id;
+    document.getElementById("listView").style.display = "none";
+    document.getElementById("detailView").style.display = "block";
+    document.getElementById("seriesHero").innerHTML = '<div style="color:#444;font-size:13px">Loading...</div>';
+    document.getElementById("seasonsContainer").innerHTML = "";
+    document.getElementById("uploadEpPanel").style.display = "none";
+
+    try {
+      const res = await fetch(`${CONFIG.BASE_URL}/api/admin/series/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!data.success) {
+        document.getElementById("seriesHero").innerHTML = '<div style="color:#ff6b6b">Failed to load series</div>';
+        return;
+      }
+
+      const s = data.series;
+
+      document.getElementById("seriesHero").innerHTML = `
+        <div class="hero-thumb">
+          ${s.thumbnail
+            ? thumbImg(s.thumbnail, s.title)
+            : `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+                 fill="none" stroke="#333" stroke-width="1">
+                 <rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/>
+               </svg>`
+          }
+        </div>
+        <div class="hero-info">
+          <div class="hero-badge">SERIES</div>
+          <div class="hero-title">${s.title}</div>
+          <div class="hero-desc">${s.description || 'No description'}</div>
+          <div class="hero-meta">${s.created_by_name ? 'Created by ' + s.created_by_name : ''}</div>
+          ${data.episodes && data.episodes.length > 0 ? `
+            <a href="watch.html?id=${data.episodes[0].id}&filename=${encodeURIComponent(data.episodes[0].filename)}&series=${id}"
+               class="play-first-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                fill="white" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Play from Episode 1
+            </a>
+          ` : ''}
+          ${user.role === "admin" ? `
+            <div style="margin-top:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <label style="background:#1a1a2a;border:1px solid #2a2a4a;color:#888aff;padding:7px 14px;border-radius:6px;font-size:12px;cursor:pointer">
+                Set Thumbnail
+                <input type="file" accept="image/*" style="display:none" onchange="uploadSeriesThumbnail(${s.id}, this)">
+              </label>
+              <button onclick="deleteSeries(${s.id})"
+                style="background:#2a0f0f;border:1px solid #4a1a1a;color:#ff6b6b;padding:7px 14px;border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer">
+                Delete Series
+              </button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+
+      // Show upload panel for admin; check subscription for others
+      if (user.role === "admin") {
+        document.getElementById("uploadEpPanel").style.display = "block";
+      } else {
+        try {
+          const subRes = await fetch(`${CONFIG.BASE_URL}/api/admin/my-subscription`, {
+            headers: { "Authorization": `Bearer ${token}` }
+          });
+          const subData = await subRes.json();
+          if (subData.subscribed) {
+            document.getElementById("uploadEpPanel").style.display = "block";
+          }
+        } catch (e) {}
+      }
+
+      renderEpisodes(data.episodes || []);
+
+    } catch (err) {
+      console.error("Error loading series detail:", err);
+      document.getElementById("seriesHero").innerHTML = '<div style="color:#ff6b6b">Error loading series</div>';
+    }
+  }
+
+  function renderEpisodes(episodes) {
+    const container = document.getElementById("seasonsContainer");
+
+    if (!episodes.length) {
+      container.innerHTML = '<div class="empty-state" style="padding:40px 0">No episodes yet. Upload the first episode above.</div>';
+      return;
+    }
+
+    const seasons = {};
+    episodes.forEach(ep => {
+      const season = ep.season_number || 1;
+      if (!seasons[season]) seasons[season] = [];
+      seasons[season].push(ep);
+    });
+
+    container.innerHTML = Object.keys(seasons).sort((a,b) => a-b).map(season => `
+      <div class="season-section">
+        <div class="season-title">Season ${season}</div>
+        <div class="episode-list">
+          ${seasons[season].map(ep => `
+            <a class="episode-card"
+               href="watch.html?id=${ep.id}&filename=${encodeURIComponent(ep.filename)}&series=${currentSeriesId}">
+              <div class="ep-number">${ep.episode_number || '?'}</div>
+              <div class="ep-thumb">
+                ${ep.thumbnail
+                  ? thumbImg(ep.thumbnail, ep.title)
+                  : `<div class="ep-play-icon">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                         fill="#333" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                     </div>`
+                }
+              </div>
+              <div class="ep-info">
+                <div class="ep-title">E${ep.episode_number} — ${ep.title}</div>
+                <div class="ep-desc">${ep.description || ''}</div>
+              </div>
+              ${user.role === "admin" ? `
+                <div class="ep-actions" onclick="event.preventDefault();event.stopPropagation()">
+                  <button class="ep-delete-btn" onclick="deleteEpisode(${ep.id}, event)">Delete</button>
+                </div>
+              ` : ''}
+            </a>
+          `).join("")}
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function showListView() {
+    currentSeriesId = null;
+    document.getElementById("detailView").style.display = "none";
+    document.getElementById("listView").style.display = "block";
+    document.getElementById("uploadEpPanel").style.display = "none";
+    loadSeries();
+  }
+
+  function updateEpLabel(input) {
+    document.getElementById("epFileLabel").textContent =
+      input.files[0] ? input.files[0].name : "Choose video file...";
+  }
+
+  async function uploadEpisode() {
+    const title = document.getElementById("epTitle").value.trim();
+    const desc = document.getElementById("epDesc").value.trim();
+    const season = document.getElementById("epSeason").value;
+    const episode = document.getElementById("epNumber").value;
+    const file = document.getElementById("epFile").files[0];
+    const status = document.getElementById("epStatus");
+    const btn = document.getElementById("uploadEpBtn");
+
+    if (!title) { status.textContent = "Please enter episode title"; return; }
+    if (!episode) { status.textContent = "Please enter episode number"; return; }
+    if (!file) { status.textContent = "Please select a video file"; return; }
+
+    const formData = new FormData();
+    formData.append("video", file);
+    formData.append("title", title);
+    formData.append("description", desc);
+    formData.append("series_id", currentSeriesId);
+    formData.append("episode_number", episode);
+    formData.append("season_number", season || 1);
+    formData.append("category", "Series");
+
+    const progressWrap = document.getElementById("epProgressWrap");
+    const progressBar = document.getElementById("epProgressBar");
+    const progressPct = document.getElementById("epProgressPct");
+    const progressLabel = document.getElementById("epProgressLabel");
+
+    btn.disabled = true;
+    status.textContent = "";
+    progressWrap.style.display = "block";
+    progressBar.style.width = "0%";
+    progressPct.textContent = "0%";
+    progressLabel.textContent = "Starting upload...";
+
+    const endpoint = user.role === "admin"
+      ? `${CONFIG.BASE_URL}/api/videos/upload`
+      : `${CONFIG.BASE_URL}/api/videos/upload-subscriber`;
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.onprogress = function(e) {
+      if (!e.lengthComputable) return;
+      const pct = Math.round((e.loaded / e.total) * 100);
+      progressBar.style.width = pct + "%";
+      progressPct.textContent = pct + "%";
+      const mb = (e.loaded / 1024 / 1024).toFixed(1);
+      const total = (e.total / 1024 / 1024).toFixed(1);
+      progressLabel.textContent = mb + " / " + total + " MB";
+    };
+
+    xhr.onload = function() {
+      btn.disabled = false;
+      try {
+        const data = JSON.parse(xhr.responseText);
+        if (data.success) {
+          progressBar.style.width = "100%";
+          progressPct.textContent = "100%";
+          progressLabel.textContent = "Done!";
+          status.textContent = "Episode uploaded!";
+          document.getElementById("epTitle").value = "";
+          document.getElementById("epDesc").value = "";
+          document.getElementById("epNumber").value = "";
+          document.getElementById("epFile").value = "";
+          document.getElementById("epFileLabel").textContent = "Choose video file...";
+          setTimeout(() => {
+            progressWrap.style.display = "none";
+            progressBar.style.width = "0%";
+            status.textContent = "";
+          }, 3000);
+          showSeriesDetail(currentSeriesId);
+        } else {
+          progressWrap.style.display = "none";
+          status.textContent = data.message || "Upload failed";
+        }
+      } catch(e) {
+        progressWrap.style.display = "none";
+        status.textContent = "Upload failed";
+      }
+    };
+
+    xhr.onerror = function() {
+      btn.disabled = false;
+      progressWrap.style.display = "none";
+      status.textContent = "Upload failed — network error";
+    };
+
+    xhr.open("POST", endpoint);
+    xhr.setRequestHeader("Authorization", "Bearer " + token);
+    xhr.send(formData);
+  }
+
+  async function deleteEpisode(id, e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm("Delete this episode?")) return;
+    try {
+      const res = await fetch(`${CONFIG.BASE_URL}/api/videos/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) showSeriesDetail(currentSeriesId);
+      else alert("Delete failed: " + (data.message || "unknown error"));
+    } catch (err) {
+      alert("Failed to delete episode");
+    }
+  }
+
+  async function deleteSeries(id) {
+    if (!confirm("Delete this entire series? Episodes will NOT be deleted but will be removed from the series.")) return;
+    try {
+      const res = await fetch(`${CONFIG.BASE_URL}/api/admin/series/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) showListView();
+      else alert("Delete failed: " + (data.message || "unknown error"));
+    } catch (err) {
+      alert("Failed to delete series");
+    }
+  }
+
+  async function uploadSeriesThumbnail(id, input) {
+    const file = input.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("thumbnail", file);
+    try {
+      const res = await fetch(`${CONFIG.BASE_URL}/api/admin/series/${id}/thumbnail`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` },
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) showSeriesDetail(id);
+      else alert("Thumbnail upload failed: " + (data.message || "unknown error"));
+    } catch (err) {
+      alert("Failed to upload thumbnail");
+    }
+  }
+
+
+  function scheduleTokenRefresh() {
+    try {
+      const t = localStorage.getItem("token");
+      if (!t) return;
+      const payload = JSON.parse(atob(t.split(".")[1]));
+      const expiresAt = payload.exp * 1000;
+      const refreshAt = expiresAt - (30 * 60 * 1000);
+      const delay = refreshAt - Date.now();
+      if (delay <= 0) { doTokenRefresh(); return; }
+      setTimeout(doTokenRefresh, delay);
+    } catch (e) {}
+  }
+  async function doTokenRefresh() {
+    try {
+      const t = localStorage.getItem("token");
+      const res = await fetch(`${CONFIG.BASE_URL}/api/auth/refresh`, {
+        method: "POST", headers: { "Authorization": `Bearer ${t}` }
+      });
+      const data = await res.json();
+      if (data.success) { localStorage.setItem("token", data.token); scheduleTokenRefresh(); }
+    } catch (e) {}
+  }
+  scheduleTokenRefresh();
+  function logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "login.html";
+  }
+
+  loadSeries();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+node_modules/
+logs/
+*.log
+backend/dump.sql
+*.dump
+*.pem
+*.key
+/uploads
+*.bak
+frontend/config.js

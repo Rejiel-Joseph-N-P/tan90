@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/config.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>tan90 — Requests</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap");
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Space Grotesk", sans-serif;
+      background: #080808;
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    nav {
+      background: #111;
+      border-bottom: 1px solid #1e1e1e;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-brand {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #fff 0%, #888 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-decoration: none;
+    }
+
+    .nav-right { display: flex; align-items: center; gap: 8px; }
+
+    .nav-btn {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      color: #888;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: "Space Grotesk", sans-serif;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover { background: #222; color: #fff; }
+
+    main {
+      padding: 40px 32px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .page-subtitle {
+      color: #555;
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 10px;
+      padding: 4px;
+      width: fit-content;
+      margin-bottom: 28px;
+    }
+
+    .tab-btn {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: #555;
+      font-size: 14px;
+      font-family: "Space Grotesk", sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .tab-btn.active { background: #222; color: #fff; }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* CARDS */
+    .card {
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: #666;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px 16px;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      font-family: "Space Grotesk", sans-serif;
+      outline: none;
+      margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, textarea:focus, select:focus { border-color: #444; }
+    input::placeholder, textarea::placeholder { color: #444; }
+
+    select option { background: #1a1a1a; }
+
+    textarea { height: 100px; resize: vertical; }
+
+    .submit-btn {
+      background: #fff;
+      color: #000;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: "Space Grotesk", sans-serif;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .submit-btn:hover { background: #e8e8e8; }
+    .submit-btn:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; }
+
+    .status-msg {
+      display: inline-block;
+      margin-left: 12px;
+      font-size: 13px;
+      color: #555;
+    }
+
+    /* REQUEST LIST */
+    .request-item {
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 12px;
+    }
+
+    .request-item.seen { opacity: 0.5; }
+
+    .request-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .request-type-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .badge-message { background: #1a1a2a; color: #888aff; border: 1px solid #2a2a4a; }
+    .badge-video { background: #0a2a0a; color: #4caf50; border: 1px solid #1a4a1a; }
+    .badge-pending { background: #2a1a00; color: #f0a500; border: 1px solid #4a3000; }
+    .badge-approved { background: #0a2a0a; color: #4caf50; border: 1px solid #1a4a1a; }
+    .badge-rejected { background: #2a0a0a; color: #ff6b6b; border: 1px solid #4a1a1a; }
+    .badge-seen { background: #0a1a2a; color: #64b5f6; border: 1px solid #1a3a5a; }
+
+    .request-message { font-size: 14px; color: #aaa; line-height: 1.5; margin-bottom: 8px; }
+
+    .request-meta { font-size: 12px; color: #444; }
+
+    .file-input-wrapper {
+      display: none;
+      margin-bottom: 16px;
+    }
+
+    .file-input-wrapper.show { display: block; }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #333;
+      font-size: 14px;
+    }
+  </style>
+  <link rel="stylesheet" href="/mobile.css">
+</head>
+<body>
+
+<nav>
+  <a href="home.html" class="nav-brand">tan90</a>
+  <div class="nav-right">
+    <a href="home.html" class="nav-btn">Home</a>
+    <a href="profile.html" class="nav-btn">Profile</a>
+    <button class="nav-btn" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<main>
+  <div class="page-title">Requests</div>
+  <div class="page-subtitle">Send feedback, request videos, or submit your own content</div>
+
+ <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('message', this)">Message</button>
+    <button class="tab-btn" id="videoReqTab" onclick="switchTab('video', this)">Video Request</button>
+    <button class="tab-btn" onclick="switchTab('history', this)">My Requests</button>
+  </div>
+
+  <!-- TAB: MESSAGE REQUEST -->
+  <div class="tab-panel active" id="tab-message">
+    <div class="card">
+      <div class="card-title">Send a Message or Feedback</div>
+      <div class="card-desc">Ask the admin for anything or send general feedback.</div>
+
+      <label>Your Message</label>
+      <textarea id="msgText" placeholder="What would you like to say?"></textarea>
+
+      <button class="submit-btn" id="msgBtn" onclick="submitMessage()">Send Message</button>
+      <span class="status-msg" id="msgStatus"></span>
+    </div>
+
+    <!-- MY MESSAGE REQUESTS -->
+    <div id="myMessagesList"></div>
+  </div>
+
+  <!-- TAB: VIDEO REQUEST -->
+  <div class="tab-panel" id="tab-video">
+    <div class="card">
+      <div class="card-title">Submit a Video Request</div>
+      <div class="card-desc">
+        Request a video to be added to the platform. You can submit a video file
+        or share a link (YouTube, Google Drive, etc).
+      </div>
+
+      <label>Video Title</label>
+      <input type="text" id="vrTitle" placeholder="What is this video about?" />
+
+      <label>Description</label>
+      <textarea id="vrDesc" placeholder="Describe the video content..."></textarea>
+
+      <label>Submission Type</label>
+      <select id="vrType" onchange="toggleVideoInput(this.value)">
+        <option value="link">Share a Link</option>
+        <option value="file">Upload a File</option>
+      </select>
+
+      <div id="linkWrapper">
+        <label>Video Link</label>
+        <input type="url" id="vrLink" placeholder="https://youtube.com/... or Google Drive link" />
+      </div>
+
+      <div class="file-input-wrapper" id="fileWrapper">
+        <label>Video File</label>
+        <input type="file" id="vrFile" accept="video/*" />
+      </div>
+
+      <button class="submit-btn" id="vrBtn" onclick="submitVideoRequest()">Submit Request</button>
+      <span class="status-msg" id="vrStatus"></span>
+    </div>
+  </div>
+
+  <!-- TAB: MY REQUESTS HISTORY -->
+  <div class="tab-panel" id="tab-history">
+    <div id="historyList"></div>
+  </div>
+
+</main>
+<script>
+  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  if (!token) window.location.href = "login.html";
+  
+  // Hide video request tab for subscribers (they upload directly)
+  async function checkSubscriberStatus() {
+    if (user.role === "admin") return;
+    try {
+      const res = await fetch(`${CONFIG.BASE_URL}/api/admin/my-subscription`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.subscribed) {
+        const tab = document.getElementById("videoReqTab");
+        if (tab) tab.style.display = "none";
+      }
+    } catch (err) {}
+  }
+  checkSubscriberStatus();
+
+  // =====================
+  // TABS
+  // =====================
+  function switchTab(tab, btn) {
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById(`tab-${tab}`).classList.add("active");
+    btn.classList.add("active");
+
+    if (tab === "history") loadHistory();
+    if (tab === "message") loadMyMessages();
+  }
+
+  // =====================
+  // SUBMIT MESSAGE
+  // =====================
+  async function submitMessage() {
+    const message = document.getElementById("msgText").value.trim();
+    const status = document.getElementById("msgStatus");
+    const btn = document.getElementById("msgBtn");
+
+    if (!message) { status.textContent = "Please write a message"; return; }
+
+    btn.disabled = true;
+    status.textContent = "Sending...";
+
+    try {
+      const res = await fetch(`${CONFIG.API_BASE}/api/requests`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ message })
+      });
+      const data = await res.json();
+      if (data.success) {
+        status.textContent = "Message sent!";
+        document.getElementById("msgText").value = "";
+        loadMyMessages();
+        setTimeout(() => { status.textContent = ""; }, 3000);
+      } else {
+        status.textContent = data.message;
+      }
+    } catch (err) {
+      status.textContent = "Failed to send";
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // =====================
+  // LOAD MY MESSAGES
+  // =====================
+  async function loadMyMessages() {
+    try {
+      const res = await fetch(`${CONFIG.API_BASE}/api/requests`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const list = document.getElementById("myMessagesList");
+
+      const myMessages = user.role === "admin"
+        ? data.requests
+        : data.requests?.filter(r => true) || [];
+
+      if (!myMessages || myMessages.length === 0) {
+        list.innerHTML = "";
+        return;
+      }
+
+      list.innerHTML = myMessages.map(r => `
+        <div class="request-item ${r.status === 'seen' ? 'seen' : ''}">
+          <div class="request-header">
+            <span class="request-type-badge badge-message">Message</span>
+            <span class="request-type-badge badge-${r.status}">${r.status}</span>
+          </div>
+          <div class="request-message">${r.message}</div>
+          <div class="request-meta">
+            ${new Date(r.created_at).toLocaleString()}
+            ${r.submitted_by ? `· ${r.submitted_by}` : ""}
+          </div>
+        </div>
+      `).join("");
+    } catch (err) {
+      console.error("Error loading messages:", err);
+    }
+  }
+
+  // =====================
+  // TOGGLE VIDEO INPUT
+  // =====================
+  function toggleVideoInput(type) {
+    document.getElementById("linkWrapper").style.display =
+      type === "link" ? "block" : "none";
+    document.getElementById("fileWrapper").classList.toggle("show", type === "file");
+  }
+
+  // =====================
+  // SUBMIT VIDEO REQUEST
+  // =====================
+  async function submitVideoRequest() {
+    const title = document.getElementById("vrTitle").value.trim();
+    const desc = document.getElementById("vrDesc").value.trim();
+    const type = document.getElementById("vrType").value;
+    const link = document.getElementById("vrLink").value.trim();
+    const file = document.getElementById("vrFile").files[0];
+    const status = document.getElementById("vrStatus");
+    const btn = document.getElementById("vrBtn");
+
+    if (!title) { status.textContent = "Please enter a title"; return; }
+    if (type === "link" && !link) { status.textContent = "Please enter a link"; return; }
+    if (type === "file" && !file) { status.textContent = "Please select a file"; return; }
+
+    btn.disabled = true;
+    status.textContent = "Submitting...";
+
+    try {
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", desc);
+      formData.append("request_type", type);
+      if (type === "link") formData.append("video_link", link);
+      if (type === "file") formData.append("video", file);
+
+      const res = await fetch(`${CONFIG.API_BASE}/api/videorequests/submit`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` },
+        body: formData
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        status.textContent = "Request submitted!";
+        document.getElementById("vrTitle").value = "";
+        document.getElementById("vrDesc").value = "";
+        document.getElementById("vrLink").value = "";
+        setTimeout(() => { status.textContent = ""; }, 3000);
+      } else {
+        status.textContent = data.message;
+      }
+    } catch (err) {
+      status.textContent = "Failed to submit";
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // =====================
+  // MY REQUESTS HISTORY
+  // =====================
+  async function loadHistory() {
+    try {
+      const res = await fetch(`${CONFIG.API_BASE}/api/videorequests/mine`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const list = document.getElementById("historyList");
+
+      if (!data.requests || data.requests.length === 0) {
+        list.innerHTML = '<div class="empty-state">No video requests yet</div>';
+        return;
+      }
+
+      list.innerHTML = data.requests.map(r => `
+        <div class="request-item">
+          <div class="request-header">
+            <span class="request-type-badge badge-video">
+              ${r.request_type === "file" ? "File Upload" : "Link"}
+            </span>
+            <span class="request-type-badge badge-${r.status}">${r.status}</span>
+          </div>
+          <div class="request-message">
+            <strong>${r.title}</strong><br>
+            ${r.description || "No description"}
+            ${r.video_link ? `<br><a href="${r.video_link}" target="_blank"
+              style="color:#888aff;font-size:12px;">View Link</a>` : ""}
+          </div>
+          ${r.admin_note ? `<div class="request-meta">
+            Admin note: ${r.admin_note}</div>` : ""}
+          <div class="request-meta">${new Date(r.created_at).toLocaleString()}</div>
+        </div>
+      `).join("");
+    } catch (err) {
+      console.error("Error loading history:", err);
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "login.html";
+  }
+
+  loadMyMessages();
+</script>
+
+</body>
+</html>

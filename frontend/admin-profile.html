@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script src="/config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tan90 — Admin Profile</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap");
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "DM Sans", sans-serif;
+            background: #080808;
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        nav {
+            background: #111;
+            border-bottom: 1px solid #1e1e1e;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-brand {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, #888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            color: #888;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: "DM Sans", sans-serif;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #222;
+            color: #fff;
+        }
+
+        main {
+            padding: 40px 32px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            color: #555;
+            font-size: 14px;
+            margin-bottom: 36px;
+        }
+
+        .card {
+            background: #111;
+            border: 1px solid #1e1e1e;
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            font-family: "DM Sans", sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: #444;
+        }
+
+        input::placeholder {
+            color: #444;
+        }
+
+        .input-wrapper input {
+            padding-right: 48px;
+        }
+
+        .eye-btn {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #555;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .eye-btn:hover {
+            color: #aaa;
+        }
+
+        .save-btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: "DM Sans", sans-serif;
+            cursor: pointer;
+        }
+
+        .save-btn:hover {
+            background: #e8e8e8;
+        }
+
+        .save-btn:disabled {
+            background: #2a2a2a;
+            color: #555;
+            cursor: not-allowed;
+        }
+
+        .save-status {
+            font-size: 13px;
+            color: #555;
+            margin-left: 12px;
+        }
+
+        .current-info {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #555;
+        }
+
+        .info-value {
+            font-size: 13px;
+            font-weight: 600;
+        }
+    
+/* Eye button alignment fix */
+.eye-btn {
+  position: absolute !important;
+  right: 14px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  min-height: unset !important;
+  height: auto !important;
+  width: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  background: none !important;
+  border: none !important;
+}
+
+.password-wrapper {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.password-wrapper input {
+  padding-right: 48px !important;
+  width: 100% !important;
+}
+
+  </style>
+  <link rel="stylesheet" href="/mobile.css">
+</head>
+
+<body>
+
+    <nav>
+        <a href="index.html" class="nav-brand">tan90</a>
+        <div class="nav-right">
+          <a href="index.html" class="nav-btn">Home</a>
+          <a href="admin.html" class="nav-btn">Dashboard</a>
+          <button class="nav-btn" onclick="logout()">Sign Out</button>
+        </div>
+    </nav>
+
+    <main>
+        <div class="page-title">Admin Profile</div>
+        <div class="page-subtitle">Update your admin account name and password</div>
+
+        <div class="card">
+            <div class="current-info" id="currentInfo"></div>
+
+            <div class="card-title">Update Profile</div>
+            <div class="card-desc">
+                Change your admin username and display name. Current password is required.
+            </div>
+
+            <label>Display Name</label>
+            <div class="input-wrapper">
+                <input type="text" id="displayName" placeholder="Your display name" />
+            </div>
+
+            <label>Email Address (for password reset)</label>
+            <div class="input-wrapper">
+                <input type="email" id="userEmail" placeholder="yourname@gmail.com" />
+            </div>
+
+            <label>New Username</label>
+            <div class="input-wrapper">
+                <input type="text" id="newUsername" placeholder="Leave blank to keep current" />
+            </div>
+
+            <label>New Password</label>
+            <div class="input-wrapper">
+                <input type="password" id="newPassword" placeholder="Leave blank to keep current" />
+                <button class="eye-btn" type="button" onclick="toggleEye('newPassword','ep1open','ep1closed')">
+                    <svg id="ep1open" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    <svg id="ep1closed" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" style="display:none">
+                        <path
+                            d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                </button>
+            </div>
+
+            <label>Current Password (required)</label>
+            <div class="input-wrapper">
+                <input type="password" id="currentPassword" placeholder="Enter your current password" />
+                <button class="eye-btn" type="button" onclick="toggleEye('currentPassword','ep2open','ep2closed')">
+                    <svg id="ep2open" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    <svg id="ep2closed" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" style="display:none">
+                        <path
+                            d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                </button>
+            </div>
+
+            <button class="save-btn" id="saveBtn" onclick="saveProfile()">Save Changes</button>
+            <span class="save-status" id="saveStatus"></span>
+        </div>
+    </main>
+    <script>
+        const token = localStorage.getItem("token");
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        if (!token || user.role !== "admin") window.location.href = "login.html";
+
+        // Show current info
+        document.getElementById("currentInfo").innerHTML = `
+    <div class="info-row">
+      <span class="info-label">Current Username</span>
+      <span class="info-value">${user.username}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Role</span>
+      <span class="info-value">Admin</span>
+    </div>
+  `;
+
+        function toggleEye(inputId, openId, closedId) {
+            const input = document.getElementById(inputId);
+            const open = document.getElementById(openId);
+            const closed = document.getElementById(closedId);
+            if (input.type === "password") {
+                input.type = "text";
+                open.style.display = "none";
+                closed.style.display = "block";
+            } else {
+                input.type = "password";
+                open.style.display = "block";
+                closed.style.display = "none";
+            }
+        }
+
+        async function saveProfile() {
+            const btn = document.getElementById("saveBtn");
+            const status = document.getElementById("saveStatus");
+            const currentPassword = document.getElementById("currentPassword").value.trim();
+
+            if (!currentPassword) {
+                status.textContent = "Current password is required";
+                return;
+            }
+
+            btn.disabled = true;
+            status.textContent = "Saving...";
+
+            try {
+                const res = await fetch(`${CONFIG.API_BASE}/api/admin/update-profile`, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        display_name: document.getElementById("displayName").value.trim(),
+                        new_username: document.getElementById("newUsername").value.trim(),
+                        new_password: document.getElementById("newPassword").value.trim(),
+                        current_password: currentPassword,
+                        email: document.getElementById("userEmail").value.trim()
+                    })
+                });
+
+                const data = await res.json();
+                status.textContent = data.message;
+
+                if (data.success && data.user) {
+                    const updatedUser = { ...user, username: data.user.username };
+                    localStorage.setItem("user", JSON.stringify(updatedUser));
+                    document.getElementById("currentInfo").innerHTML = `
+          <div class="info-row">
+            <span class="info-label">Current Username</span>
+            <span class="info-value">${data.user.username}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Role</span>
+            <span class="info-value">Admin</span>
+          </div>
+        `;
+                    document.getElementById("currentPassword").value = "";
+                    document.getElementById("newPassword").value = "";
+                    document.getElementById("newUsername").value = "";
+                }
+
+                setTimeout(() => { status.textContent = ""; }, 4000);
+            } catch (err) {
+                status.textContent = "Error saving changes";
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            window.location.href = "login.html";
+        }
+    </script>
+
+</body>
+
+</html>

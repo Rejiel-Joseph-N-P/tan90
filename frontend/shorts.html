@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/config.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>tan90 — Shorts</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap");
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: "DM Sans", sans-serif; background: #000; color: #fff; height: 100dvh; overflow: hidden; }
+
+    .top-bar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, transparent 100%);
+      pointer-events: none;
+    }
+    .top-bar a { pointer-events: all; }
+    .top-brand {
+      font-size: 20px; font-weight: 700;
+      background: linear-gradient(135deg, #fff 0%, #888 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+    .top-back {
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+      color: #fff; padding: 7px 14px; border-radius: 8px; font-size: 13px;
+      font-family: "DM Sans", sans-serif; text-decoration: none;
+    }
+
+    /* Feed */
+    .feed {
+      height: 100dvh; overflow-y: scroll;
+      scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .feed::-webkit-scrollbar { display: none; }
+
+    /* Slide */
+    .short-slide {
+      height: 100dvh; scroll-snap-align: start; scroll-snap-stop: always;
+      position: relative; display: flex; align-items: center; justify-content: center;
+      background: #000;
+    }
+    .short-video {
+      height: 100dvh; width: auto; max-width: 100vw;
+      object-fit: contain; display: block; background: #000;
+    }
+
+    /* Tap zone — only covers video area, NOT action buttons */
+    .tap-zone {
+      position: absolute; inset: 0; right: 68px;
+      cursor: pointer; z-index: 5;
+    }
+
+    .play-indicator {
+      position: absolute; top: 50%; left: calc(50% - 34px);
+      transform: translate(-50%, -50%);
+      width: 64px; height: 64px; background: rgba(0,0,0,0.5); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 6;
+    }
+    .play-indicator.show { opacity: 1; }
+
+    /* Fades */
+    .slide-top-fade {
+      position: absolute; top: 0; left: 0; right: 0; height: 120px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+      pointer-events: none; z-index: 4;
+    }
+    .slide-bottom-fade {
+      position: absolute; bottom: 0; left: 0; right: 68px; height: 200px;
+      background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+      pointer-events: none; z-index: 4;
+    }
+
+    /* Info — bottom left */
+    .slide-info {
+      position: absolute; bottom: 24px; left: 16px; right: 76px; z-index: 7;
+      pointer-events: none;
+    }
+    .slide-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
+    .slide-desc { font-size: 12px; color: #ccc; margin-bottom: 6px; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+    .slide-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+    .slide-tag { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.15); font-size: 10px; padding: 2px 8px; border-radius: 4px; color: #ccc; }
+
+    /* Action buttons — right side, above tap zone */
+    .slide-actions {
+      position: absolute; bottom: 24px; right: 0; width: 68px;
+      display: flex; flex-direction: column; align-items: center; gap: 18px;
+      z-index: 10;
+    }
+    .action-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      background: none; border: none; color: #fff; cursor: pointer;
+      font-family: "DM Sans", sans-serif; padding: 0;
+    }
+    .action-icon {
+      width: 44px; height: 44px; background: rgba(255,255,255,0.12);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(255,255,255,0.2); transition: background 0.2s, transform 0.1s;
+    }
+    .action-btn:active .action-icon { transform: scale(0.9); }
+    .action-icon.liked { background: rgba(255,50,50,0.35); border-color: rgba(255,80,80,0.6); }
+    .action-label { font-size: 10px; color: #ccc; }
+
+    /* Progress bar */
+    .slide-progress {
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: rgba(255,255,255,0.2); z-index: 10;
+    }
+    .slide-progress-fill { height: 100%; background: #fff; width: 0%; transition: width 0.1s linear; }
+
+    /* Comments drawer */
+    .comments-drawer {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
+      background: #111; border-radius: 16px 16px 0 0;
+      border-top: 1px solid #222;
+      transform: translateY(100%); transition: transform 0.3s ease;
+      max-height: 70dvh; display: flex; flex-direction: column;
+    }
+    .comments-drawer.open { transform: translateY(0); }
+    .drawer-handle {
+      width: 36px; height: 4px; background: #333; border-radius: 2px;
+      margin: 12px auto 0;
+    }
+    .drawer-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px 10px; border-bottom: 1px solid #1e1e1e; flex-shrink: 0;
+    }
+    .drawer-title { font-size: 14px; font-weight: 600; }
+    .drawer-close {
+      background: none; border: none; color: #555; font-size: 20px;
+      cursor: pointer; line-height: 1; padding: 0 4px;
+    }
+    .comments-list {
+      overflow-y: auto; flex: 1; padding: 12px 16px;
+    }
+    .comments-list::-webkit-scrollbar { width: 3px; }
+    .comments-list::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    .comment-item {
+      display: flex; gap: 10px; margin-bottom: 14px;
+    }
+    .comment-avatar {
+      width: 30px; height: 30px; background: #222; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; color: #666; flex-shrink: 0;
+    }
+    .comment-body { flex: 1; }
+    .comment-author { font-size: 12px; font-weight: 600; color: #888; margin-bottom: 2px; }
+    .comment-text { font-size: 13px; color: #ccc; line-height: 1.5; }
+    .comment-time { font-size: 10px; color: #444; margin-top: 2px; }
+    .comment-empty { color: #444; font-size: 13px; text-align: center; padding: 24px 0; }
+    .comment-input-row {
+      display: flex; gap: 8px; padding: 10px 16px 16px; border-top: 1px solid #1e1e1e; flex-shrink: 0;
+    }
+    .comment-input {
+      flex: 1; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 20px;
+      color: #fff; font-size: 13px; font-family: "DM Sans", sans-serif;
+      padding: 8px 14px; outline: none;
+    }
+    .comment-input::placeholder { color: #444; }
+    .comment-send {
+      background: #fff; color: #000; border: none; border-radius: 20px;
+      padding: 8px 16px; font-size: 13px; font-weight: 600;
+      font-family: "DM Sans", sans-serif; cursor: pointer; white-space: nowrap;
+    }
+    .comment-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Drawer backdrop */
+    .drawer-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      z-index: 299; display: none;
+    }
+    .drawer-backdrop.show { display: block; }
+
+    /* End slide */
+    .end-slide {
+      height: 100dvh; scroll-snap-align: start;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; background: #080808; text-align: center; padding: 32px;
+    }
+    .end-icon { font-size: 48px; }
+    .end-title { font-size: 18px; font-weight: 600; color: #333; }
+    .end-sub { font-size: 13px; color: #444; line-height: 1.6; }
+    .end-btn {
+      background: #1a1a1a; border: 1px solid #2a2a2a; color: #888;
+      padding: 10px 24px; border-radius: 8px; font-size: 13px;
+      font-family: "DM Sans", sans-serif; text-decoration: none;
+    }
+
+    .loading-slide {
+      height: 100dvh; display: flex; align-items: center; justify-content: center;
+      color: #333; font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="home.html" class="top-brand">tan90</a>
+  <a href="home.html" class="top-back">← Home</a>
+</div>
+
+<!-- Comments drawer -->
+<div class="drawer-backdrop" id="drawerBackdrop" onclick="closeComments()"></div>
+<div class="comments-drawer" id="commentsDrawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-header">
+    <span class="drawer-title" id="drawerTitle">Comments</span>
+    <button class="drawer-close" onclick="closeComments()">✕</button>
+  </div>
+  <div class="comments-list" id="commentsList"></div>
+  <div class="comment-input-row">
+    <input class="comment-input" id="commentInput" placeholder="Add a comment..." maxlength="500">
+    <button class="comment-send" id="commentSend" onclick="postComment()">Post</button>
+  </div>
+</div>
+
+<div class="feed" id="feed">
+  <div class="loading-slide">Loading shorts...</div>
+</div>
+
+<script>
+const token = localStorage.getItem("token");
+const user = JSON.parse(localStorage.getItem("user") || "{}");
+if (!token) window.location.href = "login.html";
+
+const params = new URLSearchParams(window.location.search);
+const startId = parseInt(params.get("id"));
+const startCategory = params.get("category") || "";
+const startTags = params.get("tags") || "";
+
+let shorts = [];
+let currentIndex = 0;
+let activeCommentVideoId = null;
+
+// ── Load & render ──────────────────────────────────────────────
+async function loadShorts() {
+  try {
+    const res = await fetch(`${CONFIG.BASE_URL}/api/videos`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const all = data.videos.filter(v => v.is_short);
+
+    const startVideo = all.find(v => v.id == startId);
+    const sameCat = all.filter(v => v.id != startId && (
+      (startCategory && v.category === startCategory) ||
+      (startTags && v.tags && startTags.split(",").some(t => v.tags.includes(t.trim())))
+    ));
+    const rest = all.filter(v => v.id != startId && !sameCat.find(s => s.id === v.id));
+    shorts = startVideo ? [startVideo, ...sameCat, ...rest] : [...sameCat, ...rest];
+
+    if (!shorts.length) {
+      document.getElementById("feed").innerHTML = `
+        <div class="end-slide">
+          <div class="end-icon">🎬</div>
+          <div class="end-title">No shorts yet</div>
+          <a href="home.html" class="end-btn">Go to Home</a>
+        </div>`;
+      return;
+    }
+    renderFeed();
+  } catch(e) {
+    document.getElementById("feed").innerHTML = `<div class="loading-slide">Failed to load</div>`;
+  }
+}
+
+function renderFeed() {
+  const catLabel = startCategory || (startTags ? "#" + startTags.split(",")[0].trim() : "");
+  const encodedToken = encodeURIComponent(token);
+
+  document.getElementById("feed").innerHTML = shorts.map((v, i) => `
+    <div class="short-slide" id="slide-${i}" data-index="${i}" data-id="${v.id}">
+      <div class="slide-progress"><div class="slide-progress-fill" id="prog-${i}"></div></div>
+      <div class="slide-top-fade"></div>
+      <video class="short-video" id="vid-${i}" playsinline webkit-playsinline preload="metadata" loop
+        src="${CONFIG.BASE_URL}/api/videos/stream/${encodeURIComponent(v.filename)}?token=${encodedToken}">
+      </video>
+      <div class="tap-zone" onclick="togglePlay(${i})"></div>
+      <div class="play-indicator" id="playind-${i}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </div>
+      <div class="slide-bottom-fade"></div>
+      <div class="slide-info">
+        <div class="slide-title">${v.title}</div>
+        ${v.description ? `<div class="slide-desc">${v.description}</div>` : ""}
+        <div class="slide-tags">
+          ${v.category ? `<span class="slide-tag">${v.category}</span>` : ""}
+          ${v.tags ? v.tags.split(",").filter(t=>t.trim()).map(t=>`<span class="slide-tag">#${t.trim()}</span>`).join("") : ""}
+        </div>
+      </div>
+      <div class="slide-actions">
+        <button class="action-btn" id="likebtn-${i}" onclick="toggleLike(${i}, ${v.id})">
+          <div class="action-icon" id="likeicon-${i}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <span class="action-label" id="likelabel-${i}">Like</span>
+        </button>
+        <button class="action-btn" onclick="openComments(${v.id}, ${i})">
+          <div class="action-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <span class="action-label" id="commentcount-${i}">Comments</span>
+        </button>
+        <button class="action-btn" onclick="shareShort(${v.id})">
+          <div class="action-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          </div>
+          <span class="action-label">Share</span>
+        </button>
+      </div>
+    </div>
+  `).join("") + `
+    <div class="end-slide">
+      <div class="end-icon">✓</div>
+      <div class="end-title">You're all caught up${catLabel ? " on " + catLabel : ""}!</div>
+      <div class="end-sub">Watched all ${shorts.length} short${shorts.length !== 1 ? "s" : ""}${catLabel ? " in this category" : ""}.<br>Check back later for more.</div>
+      <a href="home.html" class="end-btn">Back to Home</a>
+    </div>`;
+
+  setupObserver();
+  loadReactions();
+}
+
+// ── Intersection observer ──────────────────────────────────────
+function setupObserver() {
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const i = parseInt(entry.target.dataset.index);
+      if (isNaN(i)) return;
+      if (entry.isIntersecting) playSlide(i);
+      else pauseSlide(i);
+    });
+  }, { threshold: 0.7 });
+
+  shorts.forEach((_, i) => {
+    const el = document.getElementById(`slide-${i}`);
+    if (el) obs.observe(el);
+  });
+}
+
+// ── Playback ───────────────────────────────────────────────────
+function playSlide(i) {
+  currentIndex = i;
+  const vid = document.getElementById(`vid-${i}`);
+  if (!vid) return;
+  vid.play().catch(() => {});
+  vid.ontimeupdate = () => {
+    if (!vid.duration) return;
+    const prog = document.getElementById(`prog-${i}`);
+    if (prog) prog.style.width = (vid.currentTime / vid.duration * 100) + "%";
+  };
+  saveHistory(shorts[i].id, vid);
+}
+
+function pauseSlide(i) {
+  const vid = document.getElementById(`vid-${i}`);
+  if (vid) vid.pause();
+}
+
+function togglePlay(i) {
+  const vid = document.getElementById(`vid-${i}`);
+  const ind = document.getElementById(`playind-${i}`);
+  if (!vid) return;
+  if (vid.paused) {
+    vid.play();
+    ind.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
+  } else {
+    vid.pause();
+    ind.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="white"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`;
+  }
+  ind.classList.add("show");
+  setTimeout(() => ind.classList.remove("show"), 700);
+}
+
+// ── Reactions ──────────────────────────────────────────────────
+async function loadReactions() {
+  shorts.forEach(async (v, i) => {
+    try {
+      const res = await fetch(`${CONFIG.BASE_URL}/api/videos/reactions/${v.id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      updateLikeUI(i, data.userReaction === "like", data.likes);
+    } catch(e) {}
+  });
+}
+
+async function toggleLike(i, videoId) {
+  try {
+    const res = await fetch(`${CONFIG.BASE_URL}/api/videos/react/${videoId}`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ reaction: "like" })
+    });
+    const data = await res.json();
+    updateLikeUI(i, data.userReaction === "like", data.likes);
+  } catch(e) {}
+}
+
+function updateLikeUI(i, liked, count) {
+  const icon = document.getElementById(`likeicon-${i}`);
+  const label = document.getElementById(`likelabel-${i}`);
+  if (!icon || !label) return;
+  if (liked) {
+    icon.classList.add("liked");
+    icon.querySelector("svg").setAttribute("fill", "#ff4444");
+    icon.querySelector("svg").setAttribute("stroke", "#ff4444");
+  } else {
+    icon.classList.remove("liked");
+    icon.querySelector("svg").setAttribute("fill", "none");
+    icon.querySelector("svg").setAttribute("stroke", "white");
+  }
+  label.textContent = count > 0 ? count : "Like";
+}
+
+// ── Comments ───────────────────────────────────────────────────
+async function openComments(videoId, slideIndex) {
+  activeCommentVideoId = videoId;
+  document.getElementById("drawerBackdrop").classList.add("show");
+  document.getElementById("commentsDrawer").classList.add("open");
+  document.getElementById("commentsList").innerHTML = `<div class="comment-empty">Loading...</div>`;
+  document.getElementById("commentInput").value = "";
+
+  // Pause current video when comments open
+  pauseSlide(slideIndex);
+
+  try {
+    const res = await fetch(`${CONFIG.BASE_URL}/api/videos/comments/${videoId}`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const list = document.getElementById("commentsList");
+    const countEl = document.getElementById(`commentcount-${slideIndex}`);
+
+    if (!data.comments || !data.comments.length) {
+      list.innerHTML = `<div class="comment-empty">No comments yet. Be the first!</div>`;
+      if (countEl) countEl.textContent = "Comments";
+      return;
+    }
+
+    if (countEl) countEl.textContent = data.comments.length;
+
+    list.innerHTML = data.comments.map(c => {
+      const name = c.display_name || c.username || "User";
+      const initial = name[0].toUpperCase();
+      const time = new Date(c.created_at).toLocaleDateString();
+      return `
+        <div class="comment-item">
+          <div class="comment-avatar">${initial}</div>
+          <div class="comment-body">
+            <div class="comment-author">${name}</div>
+            <div class="comment-text">${c.content}</div>
+            <div class="comment-time">${time}</div>
+          </div>
+        </div>`;
+    }).join("");
+  } catch(e) {
+    document.getElementById("commentsList").innerHTML = `<div class="comment-empty">Failed to load comments</div>`;
+  }
+}
+
+function closeComments() {
+  document.getElementById("drawerBackdrop").classList.remove("show");
+  document.getElementById("commentsDrawer").classList.remove("open");
+  activeCommentVideoId = null;
+  // Resume current video
+  playSlide(currentIndex);
+}
+
+async function postComment() {
+  const input = document.getElementById("commentInput");
+  const btn = document.getElementById("commentSend");
+  const text = input.value.trim();
+  if (!text || !activeCommentVideoId) return;
+  btn.disabled = true;
+  try {
+    const res = await fetch(`${CONFIG.BASE_URL}/api/videos/comments/${activeCommentVideoId}`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ content: text })
+    });
+    const data = await res.json();
+    if (data.success) {
+      input.value = "";
+      // Re-open to refresh
+      const idx = shorts.findIndex(v => v.id === activeCommentVideoId);
+      openComments(activeCommentVideoId, idx);
+    }
+  } catch(e) {}
+  btn.disabled = false;
+}
+
+// Post comment on Enter key
+document.getElementById("commentInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") postComment();
+});
+
+// ── Share ──────────────────────────────────────────────────────
+function shareShort(videoId) {
+  const url = `${CONFIG.BASE_URL}/shorts.html?id=${videoId}`;
+  if (navigator.share) {
+    navigator.share({ title: "tan90", url }).catch(() => {});
+  } else {
+    const el = document.createElement("textarea");
+    el.value = url; document.body.appendChild(el); el.select();
+    document.execCommand("copy"); document.body.removeChild(el);
+    // Brief visual feedback
+    alert("Link copied!");
+  }
+}
+
+// ── Watch history ──────────────────────────────────────────────
+const historyTimers = {};
+function saveHistory(videoId, vid) {
+  clearInterval(historyTimers[videoId]);
+  historyTimers[videoId] = setInterval(async () => {
+    if (vid.paused) return;
+    try {
+      await fetch(`${CONFIG.BASE_URL}/api/videos/history/${videoId}`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ progress_seconds: Math.floor(vid.currentTime), duration_seconds: Math.floor(vid.duration || 0) })
+      });
+    } catch(e) {}
+  }, 5000);
+}
+
+loadShorts();
+</script>
+</body>
+</html>

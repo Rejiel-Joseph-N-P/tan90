@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script src="/config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tan90 — Payment Successful</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap");
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Space Grotesk", sans-serif;
+            background: #080808;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            background: #111;
+            border: 1px solid #1e1e1e;
+            border-radius: 16px;
+            padding: 48px 40px;
+            text-align: center;
+            max-width: 440px;
+            width: 100%;
+        }
+
+        .icon {
+            width: 72px;
+            height: 72px;
+            background: #0a2a0a;
+            border: 2px solid #1a4a1a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+
+        h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        p {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+
+        .btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 13px 28px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: "Space Grotesk", sans-serif;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #e8e8e8;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <div class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                stroke="#4caf50" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12" />
+            </svg>
+        </div>
+        <h2>Payment Successful!</h2>
+        <p>Your subscription has been activated. You now have access to your upload dashboard. Welcome to tan90!</p>
+        <a href="profile.html" class="btn">Go to My Profile</a>
+    </div>
+    <script src="config.js"></script>
+    <script>
+        // Notify backend of successful payment
+        const token = localStorage.getItem("token");
+        const params = new URLSearchParams(window.location.search);
+        if (token && params.get("txnid")) {
+            fetch(`${CONFIG.API_BASE}/api/admin/payment-success`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    txnid: params.get("txnid"),
+                    status: "success"
+                })
+            }).catch(err => console.error("Payment notification error:", err));
+        }
+    </script>
+</body>
+
+</html>

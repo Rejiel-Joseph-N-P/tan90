@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/config.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TAN90 — Request Access</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: #080808;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-image: radial-gradient(ellipse at 50% 0%, #1a1a1a 0%, #080808 70%);
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 460px;
+      padding: 24px;
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .brand-logo {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #fff 0%, #888 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .brand-tagline {
+      color: #555;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    .card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 16px;
+      padding: 36px;
+    }
+
+    .card h2 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .card p {
+      color: #555;
+      font-size: 13px;
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    .form-group { margin-bottom: 18px; }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: #888;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 13px 16px;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      font-family: 'Space Grotesk', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, textarea:focus { border-color: #444; }
+    input::placeholder, textarea::placeholder { color: #444; }
+
+    textarea {
+      height: 100px;
+      resize: vertical;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: #fff;
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Space Grotesk', sans-serif;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+
+    .submit-btn:hover { background: #e8e8e8; }
+    .submit-btn:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      color: #555;
+      font-size: 13px;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover { color: #aaa; }
+
+    .error-box {
+      background: #1a0a0a;
+      border: 1px solid #3a1a1a;
+      color: #ff6b6b;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 18px;
+      display: none;
+    }
+
+    .success-box {
+      text-align: center;
+      padding: 20px 0;
+      display: none;
+    }
+
+    .success-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .success-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .success-msg {
+      color: #555;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrapper">
+    <div class="brand">
+      <div class="brand-logo">TAN90</div>
+      <div class="brand-tagline">Private Video Platform</div>
+    </div>
+
+    <div class="card">
+      <!-- FORM VIEW -->
+      <div id="formView">
+        <h2>Request Access</h2>
+        <p>Fill in your details and the admin will review your request. 
+           Your login credentials will be sent to your email once approved.</p>
+
+        <div class="error-box" id="errorBox"></div>
+
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="fullName" placeholder="Enter your full name" />
+        </div>
+
+        <div class="form-group">
+          <label>Gmail Address</label>
+          <input type="email" id="email" placeholder="yourname@gmail.com" />
+        </div>
+
+        <div class="form-group">
+          <label>Reason for Access</label>
+          <textarea id="reason" placeholder="Why do you want access to TAN90?"></textarea>
+        </div>
+
+        <button class="submit-btn" id="submitBtn" onclick="submitRequest()">
+          Submit Request
+        </button>
+      </div>
+
+      <!-- SUCCESS VIEW -->
+      <div class="success-box" id="successView">
+        <div class="success-icon">✅</div>
+        <div class="success-title">Request Submitted!</div>
+        <div class="success-msg">
+          Your request has been sent to the admin for review.<br><br>
+          Once approved, your login credentials will be sent to your Gmail address.
+          <br><br>
+          <strong>Please check your inbox and spam folder.</strong>
+        </div>
+      </div>
+    </div>
+
+    <a href="login.html" class="back-link">← Back to Sign In</a>
+  </div>
+  <script>
+    // If already logged in redirect home
+    if (localStorage.getItem('token')) {
+      window.location.href = 'index.html';
+    }
+
+    async function submitRequest() {
+      const fullName = document.getElementById('fullName').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const reason = document.getElementById('reason').value.trim();
+      const errorBox = document.getElementById('errorBox');
+      const submitBtn = document.getElementById('submitBtn');
+
+      errorBox.style.display = 'none';
+
+      if (!fullName) {
+        errorBox.textContent = 'Please enter your full name';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      if (!email) {
+        errorBox.textContent = 'Please enter your Gmail address';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      try {
+        const response = await fetch(`${CONFIG.API_BASE}/api/access/request`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ full_name: fullName, email, reason })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Show success message
+          document.getElementById('formView').style.display = 'none';
+          document.getElementById('successView').style.display = 'block';
+        } else {
+          errorBox.textContent = data.message || 'Failed to submit request';
+          errorBox.style.display = 'block';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit Request';
+        }
+
+      } catch (err) {
+        errorBox.textContent = 'Cannot connect to server';
+        errorBox.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Request';
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') submitRequest();
+    });
+  </script>
+
+</body>
+</html>
